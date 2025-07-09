@@ -14,25 +14,59 @@ export const useUserStore = defineStore('user', {
 
   actions: {
     async findOrCreateUser(tgUser) {
+      // try {
+      //   // 1. Пытаемся найти пользователя
+      //   const { data } = await axios.get(`https://fcd1d63245775e7f.mokky.dev/users?telegram_id=${tgUser.id}`)
+      //
+      //   if (Array.isArray(data) && data.length > 0) {
+      //     // Пользователь найден
+      //     this._setUser(data[0])
+      //   } else {
+      //     // 2. Не найден — создаём нового
+      //     const createRes = await axios.post('https://fcd1d63245775e7f.mokky.dev/users', {
+      //       telegram_id: tgUser.id,
+      //       first_name: tgUser.first_name,
+      //       username: tgUser.username || '',
+      //     })
+      //
+      //     this._setUser(createRes.data)
+      //   }
+      // } catch (err) {
+      //   console.error('Ошибка при получении или создании пользователя:', err)
+      // }
+
       try {
-        // 1. Пытаемся найти пользователя
-        const { data } = await axios.get(`https://fcd1d63245775e7f.mokky.dev/users?telegram_id=${tgUser.id}`)
+        const res = await axios.post("https://fcd1d63245775e7f.mokky.dev/auth", {
+          email: `${tgUser.id}_mymoney@app.com`,
+          password: tgUser.id
+        }, {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json"
+          }
+        });
+      } catch (error) {
+        if (error.response) {
+          if (error.response.status === 404) {
+            console.error("Пользователь не найден.");
 
-        if (Array.isArray(data) && data.length > 0) {
-          // Пользователь найден
-          this._setUser(data[0])
+            const res = await axios.post("https://fcd1d63245775e7f.mokky.dev/register", {
+              fullName: tgUser.first_name,
+              telegram_id: tgUser.id,
+              email: `${tgUser.id}_mymoney@app.com`,
+              password: tgUser.id
+            }, {
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+              }
+            });
+          } else {
+            console.error("Ошибка:", error.response.status, error.response.data);
+          }
         } else {
-          // 2. Не найден — создаём нового
-          const createRes = await axios.post('https://fcd1d63245775e7f.mokky.dev/users', {
-            telegram_id: tgUser.id,
-            first_name: tgUser.first_name,
-            username: tgUser.username || '',
-          })
-
-          this._setUser(createRes.data)
+          console.error("Сетевая ошибка или сервер не отвечает:", error.message);
         }
-      } catch (err) {
-        console.error('Ошибка при получении или создании пользователя:', err)
       }
     },
 
