@@ -12,12 +12,11 @@ import SettingsView from "../views/settings/SettingsView.vue";
 import AnalyticsView from "../views/AnalyticsView.vue";
 import SettingsLayout from "../views/settings/SettingsLayout.vue";
 import CategoriesView from "@/views/settings/CategoriesView.vue";
-import Debug from "@/views/Debug.vue";
 
 const routes = [
   {
     path: '/',
-    component: Debug,
+    component: MainView,
     meta: {
       hideNav: true
     }
