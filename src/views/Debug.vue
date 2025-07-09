@@ -6,6 +6,9 @@ const debugData = ref({})
 const isReady = ref(false)
 
 onMounted(() => {
+  if (window.Telegram?.WebApp) {
+    window.Telegram.WebApp.ready()
+  }
   // Telegram WebApp может быть не готов — подождём init
   try {
     tg.ready?.()
