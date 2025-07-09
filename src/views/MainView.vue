@@ -1,17 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useUserStore } from '../stores/useUserStore.js'
-import SvgLoader from "@/components/SvgLoader.vue"
+import { onMounted } from 'vue'
+import { useUserStore } from '@/stores/useUserStore'
+import SvgLoader from "@/components/SvgLoader.vue";
 
 const userStore = useUserStore()
 
 onMounted(async () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
-
-  if (tgUser) {
-    if (!userStore.isAuthenticated) {
-      await userStore.findOrCreateUser(tgUser)
-    }
+  if (tgUser && !userStore.isAuthenticated) {
+    await userStore.findOrCreateUser(tgUser)
   }
 })
 </script>
