@@ -4,7 +4,6 @@ import { useUserStore } from '../stores/useUserStore.js'
 import SvgLoader from "@/components/SvgLoader.vue"
 
 const userStore = useUserStore()
-const tgUserRaw = ref(null) // для отладки: исходные данные Telegram
 
 onMounted(async () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
