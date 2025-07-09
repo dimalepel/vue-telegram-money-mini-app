@@ -25,7 +25,7 @@ export const useUserStore = defineStore('user', {
         } else {
           // 2. Не найден — создаём нового
           const createRes = await axios.post('https://fcd1d63245775e7f.mokky.dev/users', {
-            telegram_id: tgUser.telegram_id,
+            telegram_id: tgUser.id,
             first_name: tgUser.first_name,
             username: tgUser.username || '',
           })
