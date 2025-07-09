@@ -1,11 +1,3 @@
-<script setup>
-import { useUserStore } from '@/stores/useUserStore'
-
-const userStore = useUserStore()
-
-
-</script>
-
 <template>
   <nav class="d-flex justify-content-around py-2 container bg-white">
     <router-link class="btn btn-light" to="/add-record">
