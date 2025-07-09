@@ -11,7 +11,7 @@ const showFallbackNotice = ref(false)
 onMounted( async () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 
-  if (!tgUser) {
+  if (tgUser) {
     await userStore.findOrCreateUser(tgUser)
 
     setTimeout(() => {

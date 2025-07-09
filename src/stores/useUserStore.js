@@ -45,24 +45,35 @@ export const useUserStore = defineStore('user', {
             "Content-Type": "application/json"
           }
         });
+
+        console.log("Вход успешен:", res.data);
+
       } catch (error) {
         if (error.response) {
           if (error.response.status === 404) {
-            console.error("Пользователь не найден.");
+            console.error("Пользователь не найден. Пытаемся зарегистрировать...");
 
-            const res = await axios.post("https://fcd1d63245775e7f.mokky.dev/register", {
-              fullName: tgUser.first_name,
-              telegram_id: tgUser.id,
-              email: `${tgUser.id}_mymoney@app.com`,
-              password: `${tgUser.id}`
-            }, {
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-              }
-            });
+            try {
+              const registerRes = await axios.post("https://fcd1d63245775e7f.mokky.dev/register", {
+                fullName: tgUser.first_name,
+                telegram_id: tgUser.id,
+                email: `${tgUser.id}_mymoney@app.com`,
+                password: `${tgUser.id}`
+              }, {
+                headers: {
+                  Accept: "application/json",
+                  "Content-Type": "application/json"
+                }
+              });
+
+              console.log("Регистрация успешна:", registerRes.data);
+
+            } catch (regError) {
+              console.error("Ошибка при регистрации:", regError.response?.status, regError.response?.data);
+            }
+
           } else {
-            console.error("Ошибка:", error.response.status, error.response.data);
+            console.error("Ошибка входа:", error.response.status, error.response.data);
           }
         } else {
           console.error("Сетевая ошибка или сервер не отвечает:", error.message);
