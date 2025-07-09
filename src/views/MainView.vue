@@ -60,14 +60,18 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/useUserStore'
 
 const userId = ref(null)
+const userStore = useUserStore()
 
-onMounted(() => {
+onMounted(async () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 
   if (tgUser) {
     userId.value = tgUser.id
+
+    await userStore.findOrCreateUser(tgUser)
   }
 })
 </script>
