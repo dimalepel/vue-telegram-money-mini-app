@@ -16,7 +16,6 @@
       <i class="bi bi-gear"></i>
     </router-link>
   </nav>
-  <div class="mb-2 text-center">app version 1.0</div>
 </template>
 
 <style scoped>
