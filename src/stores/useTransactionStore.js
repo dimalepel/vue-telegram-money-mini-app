@@ -67,10 +67,16 @@ export const useTransactionStore = defineStore('transaction', {
     },
 
     async addTransaction(payload) {
+      const userStore = useUserStore()
+
       try {
         const response = await axios.post(
           'https://fcd1d63245775e7f.mokky.dev/transactions',
-          payload
+          payload,{
+            headers: {
+              Authorization: `Bearer ${userStore.token}`
+            }
+          }
         )
       } catch (err) {
         this.error = 'Ошибка при добавлении транзакции'

@@ -31,12 +31,18 @@ export const useWalletStore = defineStore('wallet', {
     },
 
     async addWallet({ name, typeId, balance, userId }) {
+      const userStore = useUserStore()
+
       try {
         const res = await axios.post('https://fcd1d63245775e7f.mokky.dev/wallets', {
           name: name,
           'wallet-type_id': typeId,
           balance: balance,
           user_id: userId
+        }, {
+          headers: {
+            Authorization: `Bearer ${userStore.token}`
+          }
         })
       } catch (err) {
         console.error('Ошибка при добавлении кошелька', err)
