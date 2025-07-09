@@ -22,11 +22,10 @@ export const useUserStore = defineStore('user', {
         const { data } = await axios.get(`https://fcd1d63245775e7f.mokky.dev/users?telegram_id=${tgUser.id}`)
 
         if (data && data.id) {
-          // Пользователь найден
           this._setUser(data)
         } else {
           // 2. Не найден — создаём нового
-          const createRes = await axios.post('https://fcd1d63245775e7f.mokky.dev/users', {
+          const createRes = await axios.post('https://your-backend-api.com/user/create', {
             telegram_id: tgUser.id,
             first_name: tgUser.first_name,
             username: tgUser.username || '',
@@ -35,7 +34,9 @@ export const useUserStore = defineStore('user', {
           this._setUser(createRes.data)
         }
 
+        // ✅ Успешно — перенаправляем
         router.push('/add-record')
+
       } catch (err) {
         console.error('Ошибка при получении или создании пользователя:', err)
       }
