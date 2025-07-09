@@ -5,9 +5,11 @@ import { useRouter } from 'vue-router'
 export const useUserStore = defineStore('user', {
   state: () => ({
     id: null,
-    telegram_id: null,
-    first_name: '',
+    telegramId: null,
+    firstName: '',
     username: '',
+    status: '',
+    email: '',
     isAuthenticated: false,
   }),
 
@@ -41,17 +43,21 @@ export const useUserStore = defineStore('user', {
 
     _setUser(data) {
       this.id = data.id
-      this.telegram_id = data.telegram_id
-      this.first_name = data.first_name
+      this.telegramId = data.telegram_id
+      this.firstName = data.first_name
       this.username = data.username
+      this.status = data.status || ''
+      this.email = data.email || ''
       this.isAuthenticated = true
     },
 
     logout() {
       this.id = null
-      this.telegram_id = null
-      this.first_name = ''
+      this.telegramId = null
+      this.firstName = ''
       this.username = ''
+      this.status = ''
+      this.email = ''
       this.isAuthenticated = false
     },
   },
