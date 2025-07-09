@@ -8,18 +8,18 @@ const userStore = useUserStore()
 const router = useRouter()
 const showFallbackNotice = ref(false)
 
-onMounted(async () => {
+onMounted( () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 
   if (tgUser && !userStore.isAuthenticated) {
-    await userStore.findOrCreateUser(tgUser)
+    userStore.findOrCreateUser(tgUser)
   } else {
     // 1. Показываем уведомление
     showFallbackNotice.value = true
 
     // 2. Ждём 4 секунды, затем создаём тестового пользователя
-    setTimeout(async () => {
-      await userStore.findOrCreateUser({
+    setTimeout(() => {
+      userStore.findOrCreateUser({
         id: 123456789,
         first_name: "Dima",
         last_name: "Vashkevich",
