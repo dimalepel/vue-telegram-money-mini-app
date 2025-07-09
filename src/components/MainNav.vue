@@ -1,4 +1,8 @@
-<script setup lang="ts">
+<script setup>
+import { useUserStore } from '@/stores/useUserStore'
+
+const userStore = useUserStore()
+
 
 </script>
 
@@ -20,6 +24,9 @@
       <i class="bi bi-gear"></i>
     </router-link>
   </nav>
+  <div class="text-center text-muted small mt-2" v-if="userStore.telegramId">
+    Telegram ID: {{ userStore.telegramId }}
+  </div>
 </template>
 
 <style scoped>

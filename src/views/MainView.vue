@@ -7,25 +7,18 @@ import SvgLoader from "@/components/SvgLoader.vue";
 const userStore = useUserStore()
 const router = useRouter()
 
-onMounted(() => {
-  if (!userStore.isAuthenticated) {
-    userStore.setUser({
-      id: 1989,
-      telegramId: 123,
-      first_name: 'Dimitry',
-      username: 'dimalepel1989',
-    })
-  }
+onMounted(async () => {
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 
-  setTimeout(() => {
-    router.push('/add-record')
-  }, 2000);
+  if (tgUser && !userStore.isAuthenticated) {
+    await userStore.findOrCreateUser(tgUser)
+  }
 })
 </script>
 
 <template>
   <div class="align-items-center justify-content-center">
-    <SvgLoader/>
+    <SvgLoader class="mb-3"/>
   </div>
 </template>
 
