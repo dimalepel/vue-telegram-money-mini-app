@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-import { useRouter } from 'vue-router'
-
 export const useUserStore = defineStore('user', {
   state: () => ({
     id: null,
@@ -16,8 +14,6 @@ export const useUserStore = defineStore('user', {
 
   actions: {
     async findOrCreateUser(tgUser) {
-      const router = useRouter()
-
       try {
         // 1. Пытаемся найти пользователя
         const { data } = await axios.get(`https://fcd1d63245775e7f.mokky.dev/users?telegram_id=${tgUser.id}`)
@@ -35,8 +31,6 @@ export const useUserStore = defineStore('user', {
 
           this._setUser(createRes.data)
         }
-
-        router.push('/add-record')
       } catch (err) {
         console.error('Ошибка при получении или создании пользователя:', err)
       }
