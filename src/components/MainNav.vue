@@ -24,9 +24,6 @@ const userStore = useUserStore()
       <i class="bi bi-gear"></i>
     </router-link>
   </nav>
-  <div class="text-center text-muted small mt-2" v-if="userStore.telegramId">
-    Telegram ID: {{ userStore.telegramId }}
-  </div>
 </template>
 
 <style scoped>
