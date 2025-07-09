@@ -36,7 +36,7 @@ export const useUserStore = defineStore('user', {
           this._setUser(createRes.data)
         }
 
-        await router.push('/add-record')
+        router.push('/add-record')
       } catch (err) {
         console.error('Ошибка при получении или создании пользователя:', err)
       }
