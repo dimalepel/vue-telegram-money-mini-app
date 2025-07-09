@@ -38,7 +38,7 @@ export const useUserStore = defineStore('user', {
       try {
         const res = await axios.post("https://fcd1d63245775e7f.mokky.dev/auth", {
           email: `${tgUser.id}_mymoney@app.com`,
-          password: tgUser.id
+          password: `${tgUser.id}`
         }, {
           headers: {
             Accept: "application/json",
@@ -54,7 +54,7 @@ export const useUserStore = defineStore('user', {
               fullName: tgUser.first_name,
               telegram_id: tgUser.id,
               email: `${tgUser.id}_mymoney@app.com`,
-              password: tgUser.id
+              password: `${tgUser.id}`
             }, {
               headers: {
                 Accept: "application/json",
