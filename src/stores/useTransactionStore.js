@@ -51,7 +51,11 @@ export const useTransactionStore = defineStore('transaction', {
       this.error = null
       try {
         const response = await axios.get(
-          `https://fcd1d63245775e7f.mokky.dev/transactions?user_id=${userStore.id}`
+          `https://fcd1d63245775e7f.mokky.dev/transactions?user_id=${userStore.id}`, {
+            headers: {
+              Authorization: `Bearer ${userStore.token}`
+            }
+          }
         )
         this.transactions = response.data
       } catch (err) {

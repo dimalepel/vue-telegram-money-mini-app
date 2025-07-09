@@ -16,7 +16,11 @@ export const useWalletStore = defineStore('wallet', {
       this.loading = true
       this.error = null
       try {
-        const response = await axios.get(`https://fcd1d63245775e7f.mokky.dev/wallets?_relations=wallet-types&user_id=${userStore.id}`)
+        const response = await axios.get(`https://fcd1d63245775e7f.mokky.dev/wallets?_relations=wallet-types&user_id=${userStore.id}`, {
+          headers: {
+            Authorization: `Bearer ${userStore.token}`
+          }
+        })
         this.wallets = response.data
       } catch (error) {
         this.error = 'Ошибка при получении кошельков'

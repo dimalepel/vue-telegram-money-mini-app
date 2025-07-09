@@ -1,13 +1,18 @@
 <template>
   <div>
-    <label class="mb-2 d-block">Выберите месяц:</label>
-    <select v-model="selectedMonth" class="form-select mb-3 w-100">
-      <option v-for="month in availableMonths" :key="month" :value="month">
-        {{ month }}
-      </option>
-    </select>
+    <div v-if="availableMonths.lenght >0">
+      <label class="mb-2 d-block">Выберите месяц:</label>
+      <select v-model="selectedMonth" class="form-select mb-3 w-100">
+        <option v-for="month in availableMonths" :key="month" :value="month">
+          {{ month }}
+        </option>
+      </select>
 
-    <Bar :data="chartData" :options="chartOptions" v-if="selectedMonth" />
+      <Bar :data="chartData" :options="chartOptions" v-if="selectedMonth" />
+    </div>
+    <div v-else class="alert alert-warning" role="alert">
+      У Вас нет данных для аналитики
+    </div>
   </div>
 </template>
 

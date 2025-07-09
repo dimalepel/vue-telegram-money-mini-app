@@ -26,20 +26,26 @@ const filteredHistory = computed(() => {
 <template>
   <div>
     <h1 class="w-100 mb-3 text-center">История операций</h1>
-    <select v-model="selectedWalletId" class="form-select mb-3">
-      <option value="">Все депозиты</option>
-      <option :value="item.id" v-for="item in wallets" :key="item.id">{{ item.name }}</option>
-    </select>
+
     <p v-if="loading">Загрузка...</p>
     <p v-if="error">{{ error }}</p>
-    <ul class="w-100 ps-0" v-else>
-      <li class="d-flex py-2 border-bottom" v-for="item in filteredHistory" :key="item.id">
-        <i :class="['bi', 'me-2', (item.amount > 0) ? 'bi-arrow-down-left-circle-fill text-success' : 'bi-arrow-up-right-circle-fill text-danger']"></i>
-        <div class="flex-grow-1">
-          <span class="text-secondary">{{ item.date }}</span> {{ item.description }}<br>
-          <strong :class="(item.amount > 0) ? 'text-success' : 'text-danger'">{{ (item.amount > 0) ? `+${item.amount}` : `${item.amount}` }} BYN</strong>
-        </div>
-      </li>
-    </ul>
+    <div v-if="!loading && !error">
+      <select v-if="wallets.length > 0" v-model="selectedWalletId" class="form-select mb-3">
+        <option value="">Все депозиты</option>
+        <option :value="item.id" v-for="item in wallets" :key="item.id">{{ item.name }}</option>
+      </select>
+      <ul class="w-100 ps-0" v-if="filteredHistory.length > 0">
+        <li class="d-flex py-2 border-bottom" v-for="item in filteredHistory" :key="item.id">
+          <i :class="['bi', 'me-2', (item.amount > 0) ? 'bi-arrow-down-left-circle-fill text-success' : 'bi-arrow-up-right-circle-fill text-danger']"></i>
+          <div class="flex-grow-1">
+            <span class="text-secondary">{{ item.date }}</span> {{ item.description }}<br>
+            <strong :class="(item.amount > 0) ? 'text-success' : 'text-danger'">{{ (item.amount > 0) ? `+${item.amount}` : `${item.amount}` }} BYN</strong>
+          </div>
+        </li>
+      </ul>
+      <div v-else class="alert alert-warning" role="alert">
+        У Вас нет доступных операций
+      </div>
+    </div>
   </div>
 </template>

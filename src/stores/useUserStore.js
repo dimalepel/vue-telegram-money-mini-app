@@ -10,10 +10,22 @@ export const useUserStore = defineStore('user', {
     status: '',
     email: '',
     isAuthenticated: false,
+    token: ''
   }),
 
   actions: {
     async findOrCreateUser(tgUser) {
+      /*
+       * Логика: ищем пользователя по tg id.
+       * Если такой есть, то вводим его логин и пароль и авторизуемся для получения токена.
+       * Если такого нет, то мы делаем регистрацию и получаем токен.
+       */
+      console.log('Вызов findOrCreateUser с:', tgUser);
+
+      if (!tgUser || !tgUser.id) {
+        console.error('tgUser отсутствует или не содержит id');
+        return;
+      }
       // try {
       //   // 1. Пытаемся найти пользователя
       //   const { data } = await axios.get(`https://fcd1d63245775e7f.mokky.dev/users?telegram_id=${tgUser.id}`)
@@ -46,38 +58,42 @@ export const useUserStore = defineStore('user', {
           }
         });
 
-        console.log("Вход успешен:", res.data);
+        //console.log(res.data.token)
+        const storageData = {
+          id: res.data.data.id,
+          token: res.data.token
+        }
+        this._setUser(storageData)
+
+
 
       } catch (error) {
-        if (error.response) {
-          if (error.response.status === 404) {
-            console.error("Пользователь не найден. Пытаемся зарегистрировать...");
-
-            try {
-              const registerRes = await axios.post("https://fcd1d63245775e7f.mokky.dev/register", {
-                fullName: tgUser.first_name,
-                telegram_id: tgUser.id,
-                email: `${tgUser.id}_mymoney@app.com`,
-                password: `${tgUser.id}`
-              }, {
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json"
-                }
-              });
-
-              console.log("Регистрация успешна:", registerRes.data);
-
-            } catch (regError) {
-              console.error("Ошибка при регистрации:", regError.response?.status, regError.response?.data);
+        try {
+          const registerRes = await axios.post("https://fcd1d63245775e7f.mokky.dev/register", {
+            fullName: tgUser.first_name,
+            telegram_id: tgUser.id,
+            email: `${tgUser.id}_mymoney@app.com`,
+            password: `${tgUser.id}`
+          }, {
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json"
             }
+          });
 
-          } else {
-            console.error("Ошибка входа:", error.response.status, error.response.data);
+          const storageData = {
+            id: registerRes.data.data.id,
+            token: registerRes.data.token
           }
-        } else {
-          console.error("Сетевая ошибка или сервер не отвечает:", error.message);
+          this._setUser(storageData)
+
+          //console.log("Регистрация успешна:", registerRes.data);
+
+        } catch (regError) {
+          console.error("Ошибка при регистрации:", regError.response?.status, regError.response?.data);
         }
+
+        //console.error("Сетевая ошибка или сервер не отвечает:", error.message);
       }
     },
 
@@ -89,6 +105,7 @@ export const useUserStore = defineStore('user', {
       this.status = data.status || ''
       this.email = data.email || ''
       this.isAuthenticated = true
+      this.token = data.token
     },
 
     logout() {
@@ -99,6 +116,7 @@ export const useUserStore = defineStore('user', {
       this.status = ''
       this.email = ''
       this.isAuthenticated = false
+      this.token = ''
     },
   },
 

@@ -52,14 +52,21 @@ async function confirmAddCategory() {
     <div v-if="categoryStore.loading">Загрузка...</div>
     <div v-else-if="categoryStore.error" class="text-danger">{{ categoryStore.error }}</div>
 
-    <ul v-else class="list-group">
-      <li v-for="cat in filteredCategories" :key="cat.id" class="list-group-item d-flex align-items-center">
-        {{ cat.name }}
-        <button type="button" class="btn btn-outline-danger ms-auto" @click="deleteCategory(cat.id)">
-          <i class="bi bi-trash"></i>
-        </button>
-      </li>
-    </ul>
+    <div v-else>
+      <ul v-if="filteredCategories.length > 0" class="list-group">
+        <li v-for="cat in filteredCategories" :key="cat.id" class="list-group-item d-flex align-items-center">
+          {{ cat.name }}
+          <button type="button" class="btn btn-outline-danger ms-auto" @click="deleteCategory(cat.id)">
+            <i class="bi bi-trash"></i>
+          </button>
+        </li>
+      </ul>
+      <div v-else class="alert alert-warning" role="alert">
+        У Вас нет доступных категорий
+      </div>
+    </div>
+
+
 
     <button class="btn btn-success mt-auto w-100" @click="openAddModal">
       <i class="bi bi-plus-lg me-1"></i> Добавить категорию

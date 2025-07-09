@@ -10,6 +10,7 @@ const showFallbackNotice = ref(false)
 
 onMounted( async () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+  console.log('tgUser из Telegram:', tgUser);
 
   if (tgUser) {
     await userStore.findOrCreateUser(tgUser)
@@ -23,14 +24,16 @@ onMounted( async () => {
 
     // 2. Ждём 4 секунды, затем создаём тестового пользователя
     setTimeout(async () => {
-      await userStore.findOrCreateUser({
+      const testTgUser = {
         id: 123456789,
         first_name: "Dima",
         last_name: "Vashkevich",
         username: "dima_telegram",
         language_code: "ru",
-        is_premium: true
-      })
+        is_premium: true,
+      };
+
+      await userStore.findOrCreateUser(testTgUser)
 
       showFallbackNotice.value = false
 
@@ -61,29 +64,3 @@ i {
   margin: 0 auto;
 }
 </style>
-
-<!--<script setup>-->
-<!--import { ref, onMounted } from 'vue'-->
-<!--import { useUserStore } from '@/stores/useUserStore'-->
-
-<!--const userId = ref(null)-->
-<!--const userStore = useUserStore()-->
-
-<!--onMounted(async () => {-->
-<!--  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user-->
-
-<!--  if (tgUser) {-->
-<!--    userId.value = tgUser.id-->
-
-<!--    await userStore.findOrCreateUser(tgUser)-->
-<!--  }-->
-<!--})-->
-<!--</script>-->
-
-<!--<template>-->
-<!--  <div class="align-items-center justify-content-center text-center">-->
-<!--    <h1>Привет, Telegram!</h1>-->
-<!--    <p v-if="userId">Ваш Telegram ID: {{ userId }}</p>-->
-<!--    <p v-else>Пользователь не определён</p>-->
-<!--  </div>-->
-<!--</template>-->
