@@ -52,6 +52,8 @@ export const useWalletStore = defineStore('wallet', {
 
     async updateWalletBalance(walletId, amountDelta) {
       const wallet = this.wallets.find(w => w.id === walletId)
+      const userStore = useUserStore()
+
       if (!wallet) {
         console.error(`Кошелёк с id ${walletId} не найден`)
         return
@@ -62,6 +64,10 @@ export const useWalletStore = defineStore('wallet', {
       try {
         await axios.patch(`https://fcd1d63245775e7f.mokky.dev/wallets/${walletId}`, {
           balance: newBalance
+        }, {
+          headers: {
+            Authorization: `Bearer ${userStore.token}`
+          }
         })
         // Обновляем локальное значение, чтобы UI не ждал следующего fetch
         wallet.balance = newBalance

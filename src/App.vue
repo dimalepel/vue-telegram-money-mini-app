@@ -6,7 +6,6 @@ const route = useRoute()
 </script>
 
 <template>
-  <div class="pt-2 text-center">app version 1.9</div>
   <router-view class="d-flex flex-column flex-grow-1 container py-2 main-view"/>
   <MainNav v-if="!route.meta.hideNav" />
 </template>

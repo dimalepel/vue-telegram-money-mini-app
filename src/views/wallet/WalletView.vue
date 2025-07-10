@@ -2,6 +2,8 @@
 import { onMounted } from 'vue'
 import { useWalletStore } from '../../stores/useWalletStore'
 import { storeToRefs } from "pinia";
+import AlertMessage from "@/components/AlertMessage.vue";
+import MainHeader from "@/components/MainHeader.vue";
 
 const walletStore = useWalletStore()
 const { wallets, loading, error } = storeToRefs(walletStore)
@@ -14,7 +16,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <h1 class="w-100 mb-3 text-center">Депозиты</h1>
+    <MainHeader title="Депозиты"/>
     <p v-if="loading">Загрузка...</p>
     <p v-if="error">{{ error }}</p>
 
@@ -28,11 +30,11 @@ onMounted(() => {
           </div>
         </li>
       </ul>
-      <div v-else class="alert alert-warning" role="alert">
-        У Вас нет доступных депозитов
-      </div>
+      <AlertMessage v-else message="У Вас нет доступных депозитов" />
     </div>
 
-    <router-link to="/wallet/add-wallet" class="btn btn-success mt-auto">Новый депозит</router-link>
+    <router-link to="/wallet/add-wallet" class="btn btn-success mt-auto">
+      <i class="bi bi-plus-lg me-1"></i> Новый депозит
+    </router-link>
   </div>
 </template>

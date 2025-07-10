@@ -3,6 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useTransactionStore } from '@/stores/useTransactionStore'
 import { useWalletStore } from '@/stores/useWalletStore'
 import { storeToRefs } from 'pinia'
+import AlertMessage from "@/components/AlertMessage.vue";
+import MainHeader from "@/components/MainHeader.vue";
 
 const transactionStore = useTransactionStore()
 const walletStore = useWalletStore()
@@ -25,7 +27,7 @@ const filteredHistory = computed(() => {
 
 <template>
   <div>
-    <h1 class="w-100 mb-3 text-center">История операций</h1>
+    <MainHeader title="История операций"/>
 
     <p v-if="loading">Загрузка...</p>
     <p v-if="error">{{ error }}</p>
@@ -43,9 +45,7 @@ const filteredHistory = computed(() => {
           </div>
         </li>
       </ul>
-      <div v-else class="alert alert-warning" role="alert">
-        У Вас нет доступных операций
-      </div>
+      <AlertMessage v-else message="У Вас нет доступных операций" />
     </div>
   </div>
 </template>

@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useWalletStore } from '@/stores/useWalletStore'
 import { useWalletTypeStore } from '@/stores/useWalletTypeStore'
 import { useUserStore } from '@/stores/useUserStore'
+import MainHeader from "@/components/MainHeader.vue";
 
 const walletStore = useWalletStore()
 const walletTypeStore = useWalletTypeStore()
@@ -43,7 +44,8 @@ const handleSubmit = async () => {
 <template>
   <div class="text-center position-relative">
     <router-link to="/wallet" class="btn-close position-absolute" aria-label="Закрыть"></router-link>
-    <h1 class="w-100 mb-3">Новый депозит</h1>
+
+    <MainHeader title="Новый депозит"/>
     <form @submit.prevent="handleSubmit" class="flex-grow-1 d-flex flex-column">
       <div class="mb-3">
         <label class="form-label">Название</label>

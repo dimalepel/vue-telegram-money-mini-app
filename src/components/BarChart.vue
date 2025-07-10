@@ -10,9 +10,7 @@
 
       <Bar :data="chartData" :options="chartOptions" v-if="selectedMonth" />
     </div>
-    <div v-else class="alert alert-warning" role="alert">
-      У Вас нет данных для аналитики
-    </div>
+    <AlertMessage v-else message="У Вас нет данных для аналитики" />
   </div>
 </template>
 
@@ -31,6 +29,7 @@ import { useTransactionStore } from '@/stores/useTransactionStore'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 import dayjs from 'dayjs'
+import AlertMessage from "@/components/AlertMessage.vue";
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 

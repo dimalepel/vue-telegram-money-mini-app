@@ -3,6 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCategoryStore } from '@/stores/useCategoryStore'
 import * as bootstrap from 'bootstrap'
+import AlertMessage from "@/components/AlertMessage.vue";
+import MainHeader from "@/components/MainHeader.vue";
 
 const route = useRoute()
 const categoryStore = useCategoryStore()
@@ -48,7 +50,8 @@ async function confirmAddCategory() {
     <router-link to="/settings" class="btn-back position-absolute text-secondary" aria-label="Назад">
       <i class="bi bi-chevron-left"></i>
     </router-link>
-    <h1 class="w-100 mb-3 text-center">Категории {{ type === 'income' ? 'доходов' : 'расходов' }}</h1>
+    <MainHeader :title="`Категории ${type === 'income' ? 'доходов' : 'расходов'}`" />
+
     <div v-if="categoryStore.loading">Загрузка...</div>
     <div v-else-if="categoryStore.error" class="text-danger">{{ categoryStore.error }}</div>
 
@@ -61,12 +64,8 @@ async function confirmAddCategory() {
           </button>
         </li>
       </ul>
-      <div v-else class="alert alert-warning" role="alert">
-        У Вас нет доступных категорий
-      </div>
+      <AlertMessage v-else message="У Вас нет доступных категорий" />
     </div>
-
-
 
     <button class="btn btn-success mt-auto w-100" @click="openAddModal">
       <i class="bi bi-plus-lg me-1"></i> Добавить категорию
@@ -112,16 +111,10 @@ async function confirmAddCategory() {
   font-size: 0.75rem;
   padding: 0.2rem 0.4rem;
 }
-.btn-back {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
+
 .btn-outline-danger {
   font-size: 0.75rem;
   padding: 0.2rem 0.4rem;
 }
-.btn-back {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
+
 </style>

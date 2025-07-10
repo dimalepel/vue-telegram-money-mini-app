@@ -4,7 +4,6 @@ html, body {
 }
 
 #app {
-  height: 100vh;
   height: var(--tg-viewport-height, 100vh);
   display: flex;
   flex-direction: column;
@@ -13,4 +12,10 @@ html, body {
 
 .btn-close {
   top: 0.8rem;
+}
+
+.btn-back {
+  font-size: calc(1.3rem + .6vw);
+  line-height: 1.2;
+  font-weight: 700;
 }

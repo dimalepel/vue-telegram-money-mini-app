@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import MainHeader from "@/components/MainHeader.vue";
 
 const amount = ref('')
 const router = useRouter()
@@ -21,7 +22,7 @@ function goTo(type) {
 
 <template>
   <div class="text-center">
-    <h1 class="w-100 mb-3">Новая операция</h1>
+    <MainHeader title="Новая операция"/>
     <div class="d-flex flex-column justify-content-center flex-grow-1">
       <input v-model="amount" type="text" class="mb-3 display-1 fw-medium text-center border-0" placeholder="0" />
       <div class="row">
@@ -38,6 +39,9 @@ function goTo(type) {
 
 <style scoped>
 .display-1 {
-  font-size: 8rem;
+  font-size: 5rem;
+}
+input:focus {
+  outline: none;
 }
 </style>
