@@ -5,6 +5,7 @@ import { useTransactionStore } from '@/stores/useTransactionStore'
 import { useWalletStore } from '@/stores/useWalletStore'
 import { useUserStore } from '@/stores/useUserStore'
 import { useCategoryStore } from '@/stores/useCategoryStore'
+import MainHeader from "@/components/MainHeader.vue";
 
 const amount = ref('')
 const date = ref(new Date().toISOString().split('T')[0])
@@ -62,7 +63,9 @@ const handleSubmit = async () => {
 <template>
   <div class="text-center position-relative">
     <router-link to="/add-record" class="btn-close position-absolute" aria-label="Закрыть" />
-    <h1 class="w-100 mb-3">{{ isIncome ? 'Доход' : 'Расход' }}</h1>
+
+    <MainHeader :title="`${ isIncome ? 'Доход' : 'Расход' }`"/>
+
     <form @submit.prevent="handleSubmit" class="flex-grow-1 d-flex flex-column">
       <div class="mb-3">
         <label class="form-label">Сумма</label>

@@ -1,6 +1,7 @@
 <script setup>
-
 import MainHeader from "@/components/MainHeader.vue";
+
+const appVersion = __APP_VERSION__
 </script>
 
 <template>
@@ -15,7 +16,7 @@ import MainHeader from "@/components/MainHeader.vue";
         Категории доходов <i class="bi bi-chevron-right ms-auto"></i>
       </router-link>
     </div>
-    <div class="pt-2 mt-auto text-center">app version 1.0.10</div>
+    <div class="pt-2 mt-auto text-center">app version {{ appVersion }}</div>
   </div>
 </template>
 
