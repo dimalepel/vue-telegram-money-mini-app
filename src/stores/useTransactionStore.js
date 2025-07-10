@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import dayjs from 'dayjs' // ✅ Правильный импорт
 import { useUserStore } from './useUserStore'
+import {useWalletStore} from "@/stores/useWalletStore.js";
 
 export const useTransactionStore = defineStore('transaction', {
   state: () => ({
@@ -82,6 +83,42 @@ export const useTransactionStore = defineStore('transaction', {
         this.error = 'Ошибка при добавлении транзакции'
         console.error(err)
         throw err
+      }
+    },
+
+    async deleteTransaction(id) {
+      const userStore = useUserStore()
+
+      this.loading = true
+      this.error = null
+
+      try {
+        // Находим удаляемую транзакцию
+        const transaction = this.transactions.find(t => t.id === id)
+        if (!transaction) {
+          throw new Error('Транзакция не найдена')
+        }
+
+        // Удаляем транзакцию на сервере
+        await axios.delete(`https://fcd1d63245775e7f.mokky.dev/transactions/${id}`, {
+          headers: {
+            Authorization: `Bearer ${userStore.token}`
+          }
+        })
+
+        // Пересчитываем баланс кошелька
+        const walletStore = useWalletStore()
+
+        const delta = -transaction.amount
+        await walletStore.updateWalletBalance(transaction.wallet_id, delta)
+
+        // Обновляем локальное состояние транзакций
+        this.transactions = this.transactions.filter(t => t.id !== id)
+      } catch (error) {
+        this.error = error.response?.data?.message || 'Ошибка при удалении транзакции'
+        console.error('Ошибка удаления транзакции:', error)
+      } finally {
+        this.loading = false
       }
     }
   }

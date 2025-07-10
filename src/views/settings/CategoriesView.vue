@@ -103,6 +103,7 @@ async function confirmAddCategory() {
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
