@@ -9,10 +9,10 @@ const appVersion = __APP_VERSION__
     <MainHeader title="Настройки"/>
 
     <div class="btn-group-vertical">
-      <router-link to="/categories/expenditure" class="btn btn-outline-secondary text-start d-flex align-items-center">
+      <router-link to="/categories/expenditure" class="btn category-detail btn-outline-secondary text-start d-flex align-items-center">
         Категории расходов <i class="bi bi-chevron-right ms-auto"></i>
       </router-link>
-      <router-link to="/categories/income" class="btn btn-outline-secondary text-start d-flex align-items-center">
+      <router-link to="/categories/income" class="btn category-detail btn-outline-secondary text-start d-flex align-items-center">
         Категории доходов <i class="bi bi-chevron-right ms-auto"></i>
       </router-link>
     </div>
@@ -21,5 +21,7 @@ const appVersion = __APP_VERSION__
 </template>
 
 <style scoped>
-
+.category-detail {
+  --bs-btn-padding-y: 0.575rem;
+}
 </style>
