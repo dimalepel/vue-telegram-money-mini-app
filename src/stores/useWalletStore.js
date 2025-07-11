@@ -75,6 +75,45 @@ export const useWalletStore = defineStore('wallet', {
         console.error('Ошибка при обновлении баланса кошелька', err)
         throw err
       }
+    },
+
+    async deleteWallet(walletId, option = 'wallet') {
+      const userStore = useUserStore()
+
+      if (option === 'cancel') return
+
+      try {
+        if (option === 'walletAndTransactions') {
+          // Получение и удаление всех транзакций кошелька
+          const response = await axios.get(`https://fcd1d63245775e7f.mokky.dev/transactions?wallet_id=${walletId}`, {
+            headers: {
+              Authorization: `Bearer ${userStore.token}`
+            }
+          })
+
+          const transactions = response.data
+          for (const tx of transactions) {
+            await axios.delete(`https://fcd1d63245775e7f.mokky.dev/transactions/${tx.id}`, {
+              headers: {
+                Authorization: `Bearer ${userStore.token}`
+              }
+            })
+          }
+        }
+
+        // Удаление самого кошелька
+        await axios.delete(`https://fcd1d63245775e7f.mokky.dev/wallets/${walletId}`, {
+          headers: {
+            Authorization: `Bearer ${userStore.token}`
+          }
+        })
+
+        // Обновляем локальный список кошельков
+        this.wallets = this.wallets.filter(w => w.id !== walletId)
+      } catch (err) {
+        console.error('Ошибка при удалении кошелька или транзакций', err)
+        throw err
+      }
     }
   }
 })
