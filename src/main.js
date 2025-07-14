@@ -7,9 +7,16 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import dayjs from 'dayjs'
+
+function formatDate(date, format = 'DD.MM.YYYY') {
+  return dayjs(date).format(format)
+}
 
 const app = createApp(App)
 const pinia = createPinia()
+
+app.provide('formatDate', formatDate)
 
 pinia.use(piniaPluginPersistedstate)
 

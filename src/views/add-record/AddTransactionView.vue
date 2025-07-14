@@ -60,7 +60,7 @@ const handleSubmit = async () => {
   try {
     await transactionStore.addTransaction({
       amount: isIncome.value ? Number(amount.value) : -Number(amount.value),
-      date: date.value,
+      date: new Date(date.value).toISOString(), // ← ISO 8601 (UTC)
       description: description.value,
       type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
       user_id: userStore.id,

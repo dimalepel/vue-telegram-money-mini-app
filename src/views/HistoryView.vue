@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { inject, ref, onMounted, computed } from 'vue'
 import { useTransactionStore } from '@/stores/useTransactionStore'
 import { useWalletStore } from '@/stores/useWalletStore'
 import { storeToRefs } from 'pinia'
@@ -8,6 +8,7 @@ import MainHeader from "@/components/MainHeader.vue";
 
 const transactionStore = useTransactionStore()
 const walletStore = useWalletStore()
+const formatDate = inject('formatDate')
 
 const { transactions, loading, error } = storeToRefs(transactionStore)
 const { wallets } = storeToRefs(walletStore)
@@ -20,8 +21,12 @@ onMounted(() => {
 })
 
 const filteredHistory = computed(() => {
-  if (!selectedWalletId.value) return transactions.value
-  return transactions.value.filter(tx => tx.wallet_id === selectedWalletId.value)
+  let filtered = transactions.value
+  if (selectedWalletId.value) {
+    filtered = filtered.filter(tx => tx.wallet_id === selectedWalletId.value)
+  }
+  // Сортируем по дате DESC — от новых к старым
+  return filtered.slice().sort((a, b) => new Date(b.date) - new Date(a.date))
 })
 
 function deleteTransaction(id) {
@@ -47,7 +52,7 @@ function deleteTransaction(id) {
           <i :class="['bi', 'me-2', (item.amount > 0) ? 'bi-arrow-down-left-circle-fill text-success' : 'bi-arrow-up-right-circle-fill text-danger']"></i>
 
           <div class="flex-grow-1">
-            <span class="text-secondary">{{ item.date }}</span> {{ item.description }}<br>
+            <span class="text-secondary">{{ formatDate(item.date) }}</span> {{ item.description }}<br>
             <strong :class="(item.amount > 0) ? 'text-success' : 'text-danger'">{{ (item.amount > 0) ? `+${item.amount}` : `${item.amount}` }} BYN</strong>
           </div>
 

@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div v-if="availableMonths.lenght >0">
+    <div v-if="availableMonths.length > 0">
       <label class="mb-2 d-block">Выберите месяц:</label>
       <select v-model="selectedMonth" class="form-select mb-3 w-100">
-        <option v-for="month in availableMonths" :key="month" :value="month">
-          {{ month }}
+        <option v-for="month in availableMonths" :key="month.value" :value="month.value">
+          {{ month.label }}
         </option>
       </select>
 
@@ -29,6 +29,7 @@ import { useTransactionStore } from '@/stores/useTransactionStore'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 import dayjs from 'dayjs'
+import 'dayjs/locale/ru'
 import AlertMessage from "@/components/AlertMessage.vue";
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
@@ -46,8 +47,16 @@ onMounted(async () => {
 })
 
 const availableMonths = computed(() => {
-  const months = transactions.value.map(tx => tx.date?.slice(0, 7)).filter(Boolean)
-  return [...new Set(months)].sort()
+  const months = transactions.value
+      .map(tx => tx.date?.slice(0, 7))
+      .filter(Boolean)
+
+  const uniqueMonths = [...new Set(months)].sort()
+
+  return uniqueMonths.map(m => ({
+    value: m,  // для фильтрации и v-model
+    label: dayjs(m).locale('ru').format('MMMM YYYY').replace(/^./, c => c.toUpperCase()) // для показа
+  }))
 })
 
 const chartData = computed(() => {
@@ -84,15 +93,21 @@ const chartOptions = {
   },
   scales: {
     x: {
+      grid: {
+        display: false
+      },
       ticks: {
         maxRotation: 0,  // 👈 убирает наклон
         minRotation: 0   // 👈 оставляет горизонтально
       }
     },
     y: {
-      beginAtZero: true
+      beginAtZero: true,
+      min: 0,        // начало шкалы с 0 (или с нужного минимума)
+      max: undefined, // не задаём максимум, чтобы Chart.js вычислил автоматически
+      grace: '10%'    // добавляет сверху ~10% свободного места (Chart.js v3+)
     }
-  }
+  },
 }
 </script>
 

@@ -22,7 +22,7 @@ export const useTransactionStore = defineStore('transaction', {
         for (let day = 1; day <= daysInMonth; day++) {
           const dateKey = `${monthStr}-${String(day).padStart(2, '0')}`
           const transactions = state.transactions.filter(tx =>
-            tx.date && tx.date.startsWith(dateKey)
+            tx.date && dayjs(tx.date).format('YYYY-MM-DD') === dateKey
           )
 
           const income = transactions
