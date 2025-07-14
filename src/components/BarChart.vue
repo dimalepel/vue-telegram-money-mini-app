@@ -3,21 +3,26 @@
     <p v-if="loading">Загрузка...</p>
     <p v-if="error">{{ error }}</p>
     <div v-if="!loading && !error">
-      <div  v-if="availableMonths.length > 0" class="d-flex align-items-center mb-3">
+      <div v-if="availableMonths.length > 0" class="d-flex align-items-center mb-3">
         <button class="btn btn-outline-primary me-2" @click="prevMonth" :disabled="currentIndex === 0">←</button>
 
-        <span class="flex-grow-1 text-center fw-bold">
-        {{ currentMonthLabel }}
-      </span>
+        <span class="flex-grow-1 text-center fw-bold">{{ currentMonthLabel }}</span>
 
         <button class="btn btn-outline-primary ms-2" @click="nextMonth" :disabled="currentIndex === availableMonths.length - 1">→</button>
+      </div>
+
+      <div class="mb-3 w-100">
+        <label for="datasetSelect" class="form-label">Выберите тип данных:</label>
+        <select id="datasetSelect" v-model="selectedDataset" class="form-select w-100">
+          <option value="income">Доходы</option>
+          <option value="expense">Расходы</option>
+        </select>
       </div>
 
       <Bar :data="chartData" :options="chartOptions" v-if="selectedMonth" />
 
       <AlertMessage v-else message="У Вас нет данных для аналитики" />
     </div>
-
   </div>
 </template>
 
@@ -46,6 +51,7 @@ const { transactions, loading, error } = storeToRefs(transactionStore)
 
 const selectedMonth = ref('')
 const currentIndex = ref(0)
+const selectedDataset = ref('income')  // 'income' или 'expense'
 
 onMounted(async () => {
   await transactionStore.fetchTransactions()
@@ -94,18 +100,17 @@ const chartData = computed(() => {
     labels: daily.map(d => d.day),
     datasets: [
       {
-        label: 'Доходы',
-        backgroundColor: '#4caf50',
-        data: daily.map(d => d.income)
-      },
-      {
-        label: 'Расходы',
-        backgroundColor: '#f44336',
-        data: daily.map(d => d.expense)
+        label: selectedDataset.value === 'income' ? 'Доходы' : 'Расходы',
+        backgroundColor: selectedDataset.value === 'income' ? '#4caf50' : '#f44336',
+        data: selectedDataset.value === 'income'
+            ? daily.map(d => d.income)
+            : daily.map(d => d.expense)
       }
     ]
   }
 })
+
+const isMobile = window.innerWidth <= 768
 
 const chartOptions = {
   responsive: true,
@@ -114,11 +119,11 @@ const chartOptions = {
     title: {
       display: true,
       text: 'Доходы и расходы по дням',
-      color: '#333',            // цвет текста заголовка
+      color: '#333',
       font: {
-        size: 18,               // размер шрифта заголовка
-        family: 'Arial',        // шрифт
-        weight: 'bold'          // жирность
+        size: 18,
+        family: 'Arial',
+        weight: 'bold'
       },
       padding: {
         top: 10,
@@ -126,7 +131,7 @@ const chartOptions = {
       }
     },
     legend: {
-      position: 'top'
+      display: false // отключаем легенду, так как одна линия
     }
   },
   scales: {
@@ -137,7 +142,10 @@ const chartOptions = {
       ticks: {
         maxRotation: 0,
         minRotation: 0
-      }
+      },
+      barPercentage: isMobile ? 0.9 : 0.8,
+      categoryPercentage: isMobile ? 1 : 0.9,
+      maxBarThickness: isMobile ? 50 : 40
     },
     y: {
       beginAtZero: true,
