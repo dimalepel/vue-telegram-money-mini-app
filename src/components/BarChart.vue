@@ -1,16 +1,23 @@
 <template>
   <div>
-    <div v-if="availableMonths.length > 0">
-      <label class="mb-2 d-block">Выберите месяц:</label>
-      <select v-model="selectedMonth" class="form-select mb-3 w-100">
-        <option v-for="month in availableMonths" :key="month.value" :value="month.value">
-          {{ month.label }}
-        </option>
-      </select>
+    <p v-if="loading">Загрузка...</p>
+    <p v-if="error">{{ error }}</p>
+    <div v-if="!loading && !error">
+      <div  v-if="availableMonths.length > 0" class="d-flex align-items-center mb-3">
+        <button class="btn btn-outline-primary me-2" @click="prevMonth" :disabled="currentIndex === 0">←</button>
+
+        <span class="flex-grow-1 text-center fw-bold">
+        {{ currentMonthLabel }}
+      </span>
+
+        <button class="btn btn-outline-primary ms-2" @click="nextMonth" :disabled="currentIndex === availableMonths.length - 1">→</button>
+      </div>
 
       <Bar :data="chartData" :options="chartOptions" v-if="selectedMonth" />
+
+      <AlertMessage v-else message="У Вас нет данных для аналитики" />
     </div>
-    <AlertMessage v-else message="У Вас нет данных для аналитики" />
+
   </div>
 </template>
 
@@ -35,15 +42,18 @@ import AlertMessage from "@/components/AlertMessage.vue";
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 const transactionStore = useTransactionStore()
-const { transactions } = storeToRefs(transactionStore)
+const { transactions, loading, error } = storeToRefs(transactionStore)
 
 const selectedMonth = ref('')
+const currentIndex = ref(0)
 
 onMounted(async () => {
   await transactionStore.fetchTransactions()
 
-  const allMonths = Array.from(new Set(transactions.value.map(tx => tx.date?.slice(0, 7))))
-  selectedMonth.value = allMonths.sort().at(-1) || ''
+  if (availableMonths.value.length > 0) {
+    currentIndex.value = availableMonths.value.length - 1
+    selectedMonth.value = availableMonths.value[currentIndex.value].value
+  }
 })
 
 const availableMonths = computed(() => {
@@ -54,10 +64,28 @@ const availableMonths = computed(() => {
   const uniqueMonths = [...new Set(months)].sort()
 
   return uniqueMonths.map(m => ({
-    value: m,  // для фильтрации и v-model
-    label: dayjs(m).locale('ru').format('MMMM YYYY').replace(/^./, c => c.toUpperCase()) // для показа
+    value: m,
+    label: dayjs(m).locale('ru').format('MMMM YYYY').replace(/^./, c => c.toUpperCase())
   }))
 })
+
+const currentMonthLabel = computed(() => {
+  return availableMonths.value[currentIndex.value]?.label || ''
+})
+
+function prevMonth() {
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+    selectedMonth.value = availableMonths.value[currentIndex.value].value
+  }
+}
+
+function nextMonth() {
+  if (currentIndex.value < availableMonths.value.length - 1) {
+    currentIndex.value++
+    selectedMonth.value = availableMonths.value[currentIndex.value].value
+  }
+}
 
 const chartData = computed(() => {
   const daily = transactionStore.groupedDaysByMonth(selectedMonth.value)
@@ -85,7 +113,17 @@ const chartOptions = {
   plugins: {
     title: {
       display: true,
-      text: 'Доходы и расходы по дням'
+      text: 'Доходы и расходы по дням',
+      color: '#333',            // цвет текста заголовка
+      font: {
+        size: 18,               // размер шрифта заголовка
+        family: 'Arial',        // шрифт
+        weight: 'bold'          // жирность
+      },
+      padding: {
+        top: 10,
+        bottom: 30
+      }
     },
     legend: {
       position: 'top'
@@ -97,17 +135,15 @@ const chartOptions = {
         display: false
       },
       ticks: {
-        maxRotation: 0,  // 👈 убирает наклон
-        minRotation: 0   // 👈 оставляет горизонтально
+        maxRotation: 0,
+        minRotation: 0
       }
     },
     y: {
       beginAtZero: true,
-      min: 0,        // начало шкалы с 0 (или с нужного минимума)
-      max: undefined, // не задаём максимум, чтобы Chart.js вычислил автоматически
-      grace: '10%'    // добавляет сверху ~10% свободного места (Chart.js v3+)
+      grace: '10%'
     }
-  },
+  }
 }
 </script>
 
