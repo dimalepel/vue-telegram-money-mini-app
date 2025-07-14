@@ -90,7 +90,7 @@ const handleSubmit = async () => {
     <form @submit.prevent="handleSubmit" class="flex-grow-1 d-flex flex-column">
       <div class="mb-3">
         <label class="form-label">Сумма</label>
-        <input v-model.number="amount" type="number" class="form-control" placeholder="Введите сумму" />
+        <input v-model.number="amount" type="text" class="form-control" placeholder="Введите сумму" />
       </div>
 
       <div class="mb-3">
