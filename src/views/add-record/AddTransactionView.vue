@@ -7,9 +7,13 @@ import { useUserStore } from '@/stores/useUserStore'
 import { useCategoryStore } from '@/stores/useCategoryStore'
 import MainHeader from "@/components/MainHeader.vue";
 import { TransactionTypes } from '@/constants/transactionTypes'
+import Datepicker from 'vue3-datepicker'
+import { ru } from 'date-fns/locale'
+import { format } from 'date-fns'
 
 const amount = ref('')
 const date = ref(new Date().toISOString().split('T')[0])
+const dateValue = ref(new Date())
 const description = ref('')
 const walletId = ref('')
 const categoryId = ref('')
@@ -40,6 +44,12 @@ watch(amount, (newVal) => {
 
   const match = cleaned.match(/^(\d+)(\.(\d{0,2})?)?/)
   amount.value = match ? match[1] + (match[2] || '') : ''
+})
+
+watch(dateValue, (newDate) => {
+  if (newDate instanceof Date && !isNaN(newDate)) {
+    date.value = format(newDate, 'yyyy-MM-dd')
+  }
 })
 
 // Отфильтрованные категории по типу
@@ -85,7 +95,13 @@ const handleSubmit = async () => {
 
       <div class="mb-3">
         <label class="form-label">Дата</label>
-        <input v-model="date" type="date" class="form-control" />
+        <Datepicker
+            v-model="dateValue"
+            :locale="ru"
+            :format="d => format(d, 'dd.MM.yyyy', { locale: ru })"
+            class="form-control"
+            :readonly="false"
+        />
       </div>
 
       <div class="mb-3">
