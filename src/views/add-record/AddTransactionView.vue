@@ -6,6 +6,7 @@ import { useWalletStore } from '@/stores/useWalletStore'
 import { useUserStore } from '@/stores/useUserStore'
 import { useCategoryStore } from '@/stores/useCategoryStore'
 import MainHeader from "@/components/MainHeader.vue";
+import { TransactionTypes } from '@/constants/transactionTypes'
 
 const amount = ref('')
 const date = ref(new Date().toISOString().split('T')[0])
@@ -20,7 +21,7 @@ const walletStore = useWalletStore()
 const userStore = useUserStore()
 const categoryStore = useCategoryStore()
 
-const isIncome = ref(route.params.type === 'income')
+const isIncome = ref(route.params.type === TransactionTypes.INCOME)
 
 walletStore.fetchWallets?.()
 categoryStore.fetchCategories?.()
@@ -43,7 +44,7 @@ watch(amount, (newVal) => {
 
 // Отфильтрованные категории по типу
 const filteredCategories = computed(() =>
-    categoryStore.categories.filter(cat => cat.type === (isIncome.value ? 'income' : 'expenditure'))
+    categoryStore.categories.filter(cat => cat.type === (isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE))
 )
 
 const handleSubmit = async () => {
@@ -54,7 +55,7 @@ const handleSubmit = async () => {
       amount: isIncome.value ? Number(amount.value) : -Number(amount.value),
       date: date.value,
       description: description.value,
-      type: isIncome.value ? 'income' : 'expenditure',
+      type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
       user_id: userStore.id,
       wallet_id: Number(walletId.value),
       category_id: Number(categoryId.value),

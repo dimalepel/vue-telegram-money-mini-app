@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainHeader from "@/components/MainHeader.vue";
+import { TransactionTypes } from '@/constants/transactionTypes'
 
 const amount = ref('')
 const router = useRouter()
@@ -37,10 +38,10 @@ watch(amount, (newVal) => {
       <input v-model="amount" type="text" class="mb-3 display-1 fw-medium text-center border-0" placeholder="0" autofocus />
       <div class="row">
         <div class="col-6">
-          <button @click="goTo('expenditure')" class="btn btn-danger mb-3 w-100">Расход</button>
+          <button @click="goTo(TransactionTypes.EXPENDITURE)" class="btn btn-danger mb-3 w-100">Расход</button>
         </div>
         <div class="col-6">
-          <button @click="goTo('income')" class="btn btn-success w-100">Доход</button>
+          <button @click="goTo(TransactionTypes.INCOME)" class="btn btn-success w-100">Доход</button>
         </div>
       </div>
     </div>
