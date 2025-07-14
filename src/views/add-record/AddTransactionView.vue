@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import {ref, onMounted, computed, watch} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useTransactionStore } from '@/stores/useTransactionStore'
 import { useWalletStore } from '@/stores/useWalletStore'
@@ -29,6 +29,16 @@ onMounted(() => {
   if (route.query.amount) {
     amount.value = route.query.amount
   }
+})
+
+watch(amount, (newVal) => {
+  let cleaned = String(newVal)
+      .replace(',', '.')
+      .replace(/[^0-9.]/g, '')
+      .replace(/(\..*)\./g, '$1') // Только одна точка
+
+  const match = cleaned.match(/^(\d+)(\.(\d{0,2})?)?/)
+  amount.value = match ? match[1] + (match[2] || '') : ''
 })
 
 // Отфильтрованные категории по типу
@@ -69,7 +79,7 @@ const handleSubmit = async () => {
     <form @submit.prevent="handleSubmit" class="flex-grow-1 d-flex flex-column">
       <div class="mb-3">
         <label class="form-label">Сумма</label>
-        <input v-model.number="amount" type="text" class="form-control" placeholder="Введите сумму" />
+        <input v-model.number="amount" type="number" class="form-control" placeholder="Введите сумму" />
       </div>
 
       <div class="mb-3">

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainHeader from "@/components/MainHeader.vue";
 
@@ -8,16 +8,26 @@ const router = useRouter()
 
 function goTo(type) {
   if (!amount.value || isNaN(Number(amount.value))) {
-    alert('Введите число')
+    alert('Введите корректное число')
     return
   }
 
   router.push({
     name: 'AddTransaction',
     params: { type },
-    query: { amount: amount.value }
+    query: { amount: Number(amount.value).toFixed(2) }
   })
 }
+
+watch(amount, (newVal) => {
+  let cleaned = newVal
+      .replace(',', '.')
+      .replace(/[^0-9.]/g, '')
+      .replace(/(\..*)\./g, '$1')
+
+  const match = cleaned.match(/^(\d+)(\.(\d{0,2})?)?/)
+  amount.value = match ? match[1] + (match[2] || '') : ''
+})
 </script>
 
 <template>

@@ -3,6 +3,8 @@ import axios from 'axios'
 
 import { useUserStore } from './useUserStore'
 
+const baseURL = import.meta.env.VITE_API_URL
+
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
     loading: false,
@@ -16,7 +18,7 @@ export const useWalletStore = defineStore('wallet', {
       this.loading = true
       this.error = null
       try {
-        const response = await axios.get(`https://fcd1d63245775e7f.mokky.dev/wallets?_relations=wallet-types&user_id=${userStore.id}`, {
+        const response = await axios.get(`${baseURL}/wallets?_relations=wallet-types&user_id=${userStore.id}`, {
           headers: {
             Authorization: `Bearer ${userStore.token}`
           }
@@ -34,7 +36,7 @@ export const useWalletStore = defineStore('wallet', {
       const userStore = useUserStore()
 
       try {
-        const res = await axios.post('https://fcd1d63245775e7f.mokky.dev/wallets', {
+        const res = await axios.post(`${baseURL}/wallets`, {
           name: name,
           'wallet-type_id': typeId,
           balance: balance,
@@ -62,7 +64,7 @@ export const useWalletStore = defineStore('wallet', {
       const newBalance = wallet.balance + amountDelta
 
       try {
-        await axios.patch(`https://fcd1d63245775e7f.mokky.dev/wallets/${walletId}`, {
+        await axios.patch(`${baseURL}/wallets/${walletId}`, {
           balance: newBalance
         }, {
           headers: {
@@ -85,7 +87,7 @@ export const useWalletStore = defineStore('wallet', {
       try {
         if (option === 'walletAndTransactions') {
           // Получение и удаление всех транзакций кошелька
-          const response = await axios.get(`https://fcd1d63245775e7f.mokky.dev/transactions?wallet_id=${walletId}`, {
+          const response = await axios.get(`${baseURL}/transactions?wallet_id=${walletId}`, {
             headers: {
               Authorization: `Bearer ${userStore.token}`
             }
@@ -93,7 +95,7 @@ export const useWalletStore = defineStore('wallet', {
 
           const transactions = response.data
           for (const tx of transactions) {
-            await axios.delete(`https://fcd1d63245775e7f.mokky.dev/transactions/${tx.id}`, {
+            await axios.delete(`${baseURL}/transactions/${tx.id}`, {
               headers: {
                 Authorization: `Bearer ${userStore.token}`
               }
@@ -102,7 +104,7 @@ export const useWalletStore = defineStore('wallet', {
         }
 
         // Удаление самого кошелька
-        await axios.delete(`https://fcd1d63245775e7f.mokky.dev/wallets/${walletId}`, {
+        await axios.delete(`${baseURL}/wallets/${walletId}`, {
           headers: {
             Authorization: `Bearer ${userStore.token}`
           }

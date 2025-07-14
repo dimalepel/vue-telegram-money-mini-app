@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
+const baseURL = import.meta.env.VITE_API_URL
+
 export const useWalletTypeStore = defineStore('walletType', {
   state: () => ({
     walletTypes: [],
@@ -13,7 +15,7 @@ export const useWalletTypeStore = defineStore('walletType', {
       this.loading = true
       this.error = null
       try {
-        const res = await axios.get('https://fcd1d63245775e7f.mokky.dev/wallet-types')
+        const res = await axios.get(`${baseURL}/wallet-types`)
         this.walletTypes = res.data
       } catch (err) {
         this.error = 'Не удалось загрузить типы кошельков'

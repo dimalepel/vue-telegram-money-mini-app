@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
+const baseURL = import.meta.env.VITE_API_URL
+
 export const useUserStore = defineStore('user', {
   state: () => ({
     id: null,
@@ -48,7 +50,7 @@ export const useUserStore = defineStore('user', {
       // }
 
       try {
-        const res = await axios.post("https://fcd1d63245775e7f.mokky.dev/auth", {
+        const res = await axios.post(`${baseURL}/auth`, {
           email: `${tgUser.id}_mymoney@app.com`,
           password: `${tgUser.id}`
         }, {
@@ -69,7 +71,7 @@ export const useUserStore = defineStore('user', {
 
       } catch (error) {
         try {
-          const registerRes = await axios.post("https://fcd1d63245775e7f.mokky.dev/register", {
+          const registerRes = await axios.post(`${baseURL}/register`, {
             fullName: tgUser.first_name,
             telegram_id: tgUser.id,
             email: `${tgUser.id}_mymoney@app.com`,

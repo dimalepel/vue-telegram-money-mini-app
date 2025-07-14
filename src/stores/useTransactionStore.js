@@ -4,6 +4,8 @@ import dayjs from 'dayjs' // ✅ Правильный импорт
 import { useUserStore } from './useUserStore'
 import {useWalletStore} from "@/stores/useWalletStore.js";
 
+const baseURL = import.meta.env.VITE_API_URL
+
 export const useTransactionStore = defineStore('transaction', {
   state: () => ({
     transactions: [],
@@ -52,7 +54,7 @@ export const useTransactionStore = defineStore('transaction', {
       this.error = null
       try {
         const response = await axios.get(
-          `https://fcd1d63245775e7f.mokky.dev/transactions?user_id=${userStore.id}`, {
+          `${baseURL}/transactions?user_id=${userStore.id}`, {
             headers: {
               Authorization: `Bearer ${userStore.token}`
             }
@@ -72,7 +74,7 @@ export const useTransactionStore = defineStore('transaction', {
 
       try {
         const response = await axios.post(
-          'https://fcd1d63245775e7f.mokky.dev/transactions',
+          `${baseURL}/transactions`,
           payload,{
             headers: {
               Authorization: `Bearer ${userStore.token}`
@@ -100,7 +102,7 @@ export const useTransactionStore = defineStore('transaction', {
         }
 
         // Удаляем транзакцию на сервере
-        await axios.delete(`https://fcd1d63245775e7f.mokky.dev/transactions/${id}`, {
+        await axios.delete(`${baseURL}/transactions/${id}`, {
           headers: {
             Authorization: `Bearer ${userStore.token}`
           }
