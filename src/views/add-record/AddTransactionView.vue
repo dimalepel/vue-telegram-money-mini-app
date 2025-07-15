@@ -13,6 +13,8 @@ import 'flatpickr/dist/flatpickr.css'
 import { Russian } from 'flatpickr/dist/l10n/ru.js'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 dayjs.extend(customParseFormat)
+import * as bootstrap from 'bootstrap'
+import AddCategoryModal from "@/views/settings/AddCategoryModal.vue";
 
 const amount = ref('')
 const date = ref(new Date())
@@ -41,6 +43,10 @@ onMounted(() => {
   if (route.query.amount) {
     amount.value = route.query.amount
   }
+
+  if (modalRef.value && modalRef.value.modalEl) { // modalEl из defineExpose
+    modalInstance = new bootstrap.Modal(modalRef.value.modalEl)
+  }
 })
 
 watch(amount, (newVal) => {
@@ -57,6 +63,24 @@ watch(amount, (newVal) => {
 const filteredCategories = computed(() =>
     categoryStore.categories.filter(cat => cat.type === (isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE))
 )
+
+// ========== Модалка для добавления ==========
+const modalRef = ref(null)
+let modalInstance = null
+
+const newCategoryName = ref('')
+
+function openAddModal() {
+  newCategoryName.value = ''
+  if (modalInstance) {
+    modalInstance.show()
+  }
+}
+
+async function onSaveCategory(name) {
+  await categoryStore.createCategory(name, isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE)
+  modalInstance.hide()
+}
 
 const handleSubmit = async () => {
   if (!amount.value || !date.value || !walletId.value || !categoryId.value) return
@@ -116,12 +140,22 @@ const handleSubmit = async () => {
 
       <div class="mb-3">
         <label class="form-label">Категория</label>
-        <select v-model="categoryId" class="form-select">
-          <option value="">Выберите категорию</option>
-          <option :value="cat.id" v-for="cat in filteredCategories" :key="cat.id">
-            {{ cat.name }}
-          </option>
-        </select>
+        <div class="row">
+          <div class="col-9">
+            <select v-model="categoryId" class="form-select">
+              <option value="">Выберите категорию</option>
+              <option :value="cat.id" v-for="cat in filteredCategories" :key="cat.id">
+                {{ cat.name }}
+              </option>
+            </select>
+          </div>
+          <div class="col-3">
+            <button type="button" class="btn btn-outline-success w-100"  @click="openAddModal">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+          </div>
+        </div>
+
       </div>
 
       <div class="mb-3">
@@ -131,5 +165,12 @@ const handleSubmit = async () => {
 
       <button type="submit" class="btn btn-primary w-100 mt-auto">Сохранить</button>
     </form>
+
+    <!-- Модальное окно -->
+    <AddCategoryModal
+        ref="modalRef"
+        @save="onSaveCategory"
+    />
+
   </div>
 </template>

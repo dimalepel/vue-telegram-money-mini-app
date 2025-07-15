@@ -5,13 +5,16 @@ import { useCategoryStore } from '@/stores/useCategoryStore'
 import * as bootstrap from 'bootstrap'
 import AlertMessage from "@/components/AlertMessage.vue";
 import MainHeader from "@/components/MainHeader.vue";
+import AddCategoryModal from "@/views/settings/AddCategoryModal.vue";
 
 const route = useRoute()
 const categoryStore = useCategoryStore()
 
 onMounted(() => {
   categoryStore.fetchCategories()
-  modalInstance = new bootstrap.Modal(modalRef.value)
+  if (modalRef.value && modalRef.value.modalEl) { // modalEl из defineExpose
+    modalInstance = new bootstrap.Modal(modalRef.value.modalEl)
+  }
 })
 
 const type = computed(() => route.params.type)
@@ -33,13 +36,12 @@ const newCategoryName = ref('')
 
 function openAddModal() {
   newCategoryName.value = ''
-  modalInstance.show()
+  if (modalInstance) {
+    modalInstance.show()
+  }
 }
 
-async function confirmAddCategory() {
-  const name = newCategoryName.value.trim()
-  if (!name) return
-
+async function onSaveCategory(name) {
   await categoryStore.createCategory(name, type.value)
   modalInstance.hide()
 }
@@ -72,37 +74,10 @@ async function confirmAddCategory() {
     </button>
 
     <!-- Модальное окно -->
-    <div
-        class="modal fade"
-        id="addCategoryModal"
-        tabindex="-1"
-        aria-labelledby="addCategoryModalLabel"
-        aria-hidden="true"
+    <AddCategoryModal
         ref="modalRef"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addCategoryModalLabel">Новая категория</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-          </div>
-          <div class="modal-body">
-            <input
-                v-model="newCategoryName"
-                type="text"
-                class="form-control"
-                placeholder="Название категории"
-            />
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-            <button type="button" class="btn btn-primary" @click="confirmAddCategory">
-              Сохранить
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        @save="onSaveCategory"
+    />
 
   </div>
 </template>
