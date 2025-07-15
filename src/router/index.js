@@ -38,7 +38,8 @@ const routes = [
     component: WalletLayout,
     children: [
       { path: '', component: WalletView },
-      { path: 'add-wallet', component: AddWallet }
+      { path: 'add-wallet', component: AddWallet },
+      { path: 'edit/:walletId', component: AddWallet }
     ]
   },
   { path: '/history', component: HistoryView },

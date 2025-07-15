@@ -55,6 +55,10 @@ onMounted(() => {
             <div class="mb-1">Текущий баланс: <strong>{{ item.balance.toFixed(2) }} BYN</strong></div>
           </div>
 
+          <router-link class="btn btn-outline-primary ms-2" :to="`/wallet/edit/${item.id}`">
+            <i class="bi bi-pencil"></i>
+          </router-link>
+
           <button type="button" class="btn btn-outline-danger ms-2" @click="openModal(item.id)">
             <i class="bi bi-trash"></i>
           </button>
@@ -72,6 +76,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.btn-outline-primary,
 .btn-outline-danger {
   font-size: 0.75rem;
   padding: 0.2rem 0.4rem;

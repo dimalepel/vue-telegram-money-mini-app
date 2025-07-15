@@ -1,51 +1,90 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import {ref, onMounted, watch} from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useWalletStore } from '@/stores/useWalletStore'
 import { useWalletTypeStore } from '@/stores/useWalletTypeStore'
 import { useUserStore } from '@/stores/useUserStore'
-import MainHeader from "@/components/MainHeader.vue";
+import MainHeader from "@/components/MainHeader.vue"
 
 const walletStore = useWalletStore()
 const walletTypeStore = useWalletTypeStore()
 const userStore = useUserStore()
 const router = useRouter()
+const route = useRoute()
+
+const isEditing = ref(false)
+const walletId = ref(null)
 
 const name = ref('')
 const typeId = ref('')
 const balance = ref(0)
 const error = ref(null)
 
-onMounted(() => {
-  walletTypeStore.fetchWalletTypes()
+onMounted(async () => {
+  await walletTypeStore.fetchWalletTypes()
+  await walletStore.fetchWallets()
+
+  if (route.params.walletId) {
+    isEditing.value = true
+    walletId.value = Number(route.params.walletId)
+    const existing = walletStore.wallets.find(w => w.id === walletId.value)
+    if (existing) {
+      name.value = existing.name
+      typeId.value = Number(existing['wallet-type']?.id || 0)
+      balance.value = existing.balance
+    } else {
+      error.value = 'Депозит не найден'
+    }
+  }
 })
 
 const handleSubmit = async () => {
   error.value = null
-  if (!name.value || !typeId.value || balance.value <= 0) {
+  if (!name.value || !typeId.value || balance.value < 0) {
     error.value = 'Пожалуйста, заполните все поля'
     return
   }
 
   try {
-    await walletStore.addWallet({
-      name: name.value,
-      typeId: Number(typeId.value),
-      balance: Number(balance.value),
-      userId: userStore.id
-    })
+    if (isEditing.value) {
+      await walletStore.editWallet(walletId.value, {
+        name: name.value,
+        typeId: Number(typeId.value),
+        balance: Number(balance.value)
+      })
+    } else {
+      await walletStore.addWallet({
+        name: name.value,
+        typeId: Number(typeId.value),
+        balance: Number(balance.value),
+        userId: userStore.id
+      })
+    }
     router.push('/wallet')
   } catch {
-    error.value = 'Ошибка при добавлении депозита'
+    error.value = isEditing.value
+        ? 'Ошибка при редактировании депозита'
+        : 'Ошибка при добавлении депозита'
   }
 }
+
+watch(balance, (newVal) => {
+  let cleaned = String(newVal) // 👈 Явное преобразование
+      .replace(',', '.')
+      .replace(/[^0-9.]/g, '')
+      .replace(/(\..*)\./g, '$1')
+
+  const match = cleaned.match(/^(\d+)(\.(\d{0,2})?)?/)
+  balance.value = match ? match[1] + (match[2] || '') : ''
+})
 </script>
 
 <template>
   <div class="text-center position-relative">
     <router-link to="/wallet" class="btn-close position-absolute" aria-label="Закрыть"></router-link>
 
-    <MainHeader title="Новый депозит"/>
+    <MainHeader :title="isEditing ? 'Редактировать депозит' : 'Новый депозит'" />
+
     <form @submit.prevent="handleSubmit" class="flex-grow-1 d-flex flex-column">
       <div class="mb-3">
         <label class="form-label">Название</label>
@@ -62,12 +101,14 @@ const handleSubmit = async () => {
 
       <div class="mb-3">
         <label class="form-label">Сумма депозита</label>
-        <input v-model.number="balance" type="number" class="form-control" placeholder="Введите сумму"/>
+        <input v-model="balance" type="text" class="form-control" placeholder="Введите сумму"/>
       </div>
 
       <p v-if="error" class="text-danger mb-3">{{ error }}</p>
 
-      <button type="submit" class="btn btn-primary w-100 mt-auto">Добавить</button>
+      <button type="submit" class="btn btn-primary w-100 mt-auto">
+        {{ isEditing ? 'Сохранить изменения' : 'Добавить' }}
+      </button>
     </form>
   </div>
 </template>

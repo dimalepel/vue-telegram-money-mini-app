@@ -116,6 +116,36 @@ export const useWalletStore = defineStore('wallet', {
         console.error('Ошибка при удалении кошелька или транзакций', err)
         throw err
       }
+    },
+
+    async editWallet(walletId, { name, typeId, balance }) {
+      const userStore = useUserStore()
+
+      try {
+        await axios.patch(`${baseURL}/wallets/${walletId}`, {
+          name,
+          'wallet-type_id': typeId,
+          balance
+        }, {
+          headers: {
+            Authorization: `Bearer ${userStore.token}`
+          }
+        })
+
+        // Обновление локального хранилища
+        const walletIndex = this.wallets.findIndex(w => w.id === walletId)
+        if (walletIndex !== -1) {
+          this.wallets[walletIndex] = {
+            ...this.wallets[walletIndex],
+            name,
+            balance,
+            'wallet-type_id': typeId
+          }
+        }
+      } catch (err) {
+        console.error('Ошибка при редактировании депозита', err)
+        throw err
+      }
     }
   }
 })
