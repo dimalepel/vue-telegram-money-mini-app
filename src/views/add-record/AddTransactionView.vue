@@ -7,9 +7,12 @@ import { useUserStore } from '@/stores/useUserStore'
 import { useCategoryStore } from '@/stores/useCategoryStore'
 import MainHeader from "@/components/MainHeader.vue";
 import { TransactionTypes } from '@/constants/transactionTypes'
+import dayjs from 'dayjs'
 import Flatpickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
 import { Russian } from 'flatpickr/dist/l10n/ru.js'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+dayjs.extend(customParseFormat)
 
 const amount = ref('')
 const date = ref(new Date())
@@ -58,12 +61,15 @@ const filteredCategories = computed(() =>
 const handleSubmit = async () => {
   if (!amount.value || !date.value || !walletId.value || !categoryId.value) return
   let parsedDate = Array.isArray(date.value) ? date.value[0] : date.value
-  if (!(parsedDate instanceof Date)) parsedDate = new Date(parsedDate)
+  if (!(parsedDate instanceof Date)) {
+    parsedDate = dayjs(date.value, 'DD.MM.YYYY').toDate()
+  }
+  const dateForSaving = parsedDate.toISOString()
 
   try {
     await transactionStore.addTransaction({
       amount: isIncome.value ? Number(amount.value) : -Number(amount.value),
-      date: parsedDate.toISOString(), // ← ISO 8601 (UTC)
+      date: dateForSaving, // ← ISO 8601 (UTC)
       description: description.value,
       type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
       user_id: userStore.id,
