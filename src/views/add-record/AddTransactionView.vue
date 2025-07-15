@@ -16,6 +16,7 @@ const date = ref(new Date())
 const config = {
   locale: Russian,
   dateFormat: 'd.m.Y',
+  mode: 'single',
 }
 const description = ref('')
 const walletId = ref('')
@@ -56,11 +57,13 @@ const filteredCategories = computed(() =>
 
 const handleSubmit = async () => {
   if (!amount.value || !date.value || !walletId.value || !categoryId.value) return
+  let parsedDate = Array.isArray(date.value) ? date.value[0] : date.value
+  if (!(parsedDate instanceof Date)) parsedDate = new Date(parsedDate)
 
   try {
     await transactionStore.addTransaction({
       amount: isIncome.value ? Number(amount.value) : -Number(amount.value),
-      date: new Date(date.value).toISOString(), // ← ISO 8601 (UTC)
+      date: parsedDate.toISOString(), // ← ISO 8601 (UTC)
       description: description.value,
       type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
       user_id: userStore.id,
