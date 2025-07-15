@@ -17,7 +17,7 @@ const walletId = ref(null)
 
 const name = ref('')
 const typeId = ref('')
-const balance = ref(0)
+const balance = ref('')
 const error = ref(null)
 
 onMounted(async () => {
@@ -101,7 +101,7 @@ watch(balance, (newVal) => {
 
       <div class="mb-3">
         <label class="form-label">Сумма депозита</label>
-        <input v-model="balance" type="text" class="form-control" placeholder="Введите сумму"/>
+        <input v-model="balance" type="text" class="form-control" placeholder="0"/>
       </div>
 
       <p v-if="error" class="text-danger mb-3">{{ error }}</p>
