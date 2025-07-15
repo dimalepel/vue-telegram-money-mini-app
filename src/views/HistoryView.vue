@@ -53,7 +53,7 @@ function deleteTransaction(id) {
 
           <div class="flex-grow-1">
             <span class="text-secondary">{{ formatDate(item.date) }}</span> {{ item.description }}<br>
-            <strong :class="(item.amount > 0) ? 'text-success' : 'text-danger'">{{ (item.amount > 0) ? `+${item.amount}` : `${item.amount}` }} BYN</strong>
+            <strong :class="(item.amount > 0) ? 'text-success' : 'text-danger'">{{ (item.amount > 0) ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN</strong>
           </div>
 
           <button type="button" class="btn btn-outline-danger ms-2" @click="deleteTransaction(item.id)">
