@@ -76,9 +76,6 @@ const chartData = computed(() => {
 const chartOptions = {
   responsive: true,
   plugins: {
-    legend: {
-      position: 'bottom'
-    },
     tooltip: {
       callbacks: {
         label: function (context) {
@@ -91,8 +88,12 @@ const chartOptions = {
     },
     title: {
       display: true,
-      text: 'Распределение по категориям'
-    }
+      text: 'Распределение по категориям',
+      color: '#333',
+      font: { size: 18, family: 'Arial', weight: 'bold' },
+      padding: { top: 10, bottom: 30 }
+    },
+    legend: { display: false }
   }
 }
 </script>

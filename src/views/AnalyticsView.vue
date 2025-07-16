@@ -23,7 +23,7 @@
           </select>
         </div>
 
-        <div class="mb-3 col-12">
+        <div class="mb-3 col-8">
           <label for="datasetSelect" class="form-label">Тип операций:</label>
           <select id="datasetSelect" v-model="selectedDataset" class="form-select">
             <option value="income">Доходы</option>
@@ -31,8 +31,8 @@
           </select>
         </div>
 
-        <div class="mb-3 col-12">
-          <label class="form-label d-block">Тип диаграммы:</label>
+        <div class="mb-3 col-4">
+          <label class="form-label d-block">&nbsp;</label>
           <div class="btn-group w-100" role="group">
             <button
                 class="btn"
@@ -222,13 +222,17 @@ const chartOptions = {
 
 <style scoped>
 :deep(canvas) {
-  width: auto;
+  width: 100%;
   max-width: 100%;
-  height: 350px !important;
+  height: 50vh;
+  max-height: 450px !important;
   margin: 0 auto;
 }
 .wrapper {
   width: 100%;
   height: auto;
+}
+.row {
+  --bs-gutter-x: 0.5rem;
 }
 </style>
