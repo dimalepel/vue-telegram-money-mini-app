@@ -16,7 +16,7 @@
       <div class="row">
         <!-- Фильтр по депозиту -->
         <div class="mb-3 col-6">
-          <label for="walletSelect" class="form-label">Выберите депозит:</label>
+          <label for="walletSelect" class="form-label">Депозит:</label>
           <select id="walletSelect" v-model="selectedWalletId" class="form-select w-100">
             <option :value="null">Все депозиты</option>
             <option v-for="wallet in wallets" :key="wallet.id" :value="wallet.id">
@@ -27,17 +27,13 @@
 
         <!-- Фильтр по типу данных -->
         <div class="mb-3 col-6">
-          <label for="datasetSelect" class="form-label">Выберите тип данных:</label>
+          <label for="datasetSelect" class="form-label">Тип операций:</label>
           <select id="datasetSelect" v-model="selectedDataset" class="form-select w-100">
             <option value="income">Доходы</option>
             <option value="expense">Расходы</option>
           </select>
         </div>
       </div>
-
-
-
-
 
       <Bar :data="chartData" :options="chartOptions" v-if="selectedMonth" />
       <AlertMessage v-else message="У Вас нет данных для аналитики" />
