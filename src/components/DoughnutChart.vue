@@ -49,7 +49,7 @@ const chartData = computed(() => {
     if (tx.type !== selectedType) continue
 
     const categoryName = getCategoryNameById(tx.category_id)
-    const amount = (Math.abs(tx.amount)).toFixed(2)
+    const amount = Math.abs(tx.amount)
 
     categorySums[categoryName] = (categorySums[categoryName] || 0) + amount
   }
@@ -85,7 +85,7 @@ const chartOptions = {
           const total = context.dataset.data.reduce((a, b) => a + b, 0)
           const value = context.raw
           const percentage = ((value / total) * 100).toFixed(1)
-          return `${context.label}: ${value} (${percentage}%)`
+          return `${context.label}: ${value.toFixed(2)} (${percentage}%)`
         }
       }
     },
