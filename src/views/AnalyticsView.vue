@@ -53,7 +53,7 @@
       </div>
 
       <!-- Диаграмма -->
-      <div style="height: 50vh">
+      <div class="wrapper">
         <template v-if="selectedMonth">
           <BarChart
               v-if="selectedChartType === 'bar'"
@@ -64,6 +64,7 @@
               v-else
               :transactions="filteredTransactions"
               :selectedDataset="selectedDataset"
+              :categories="categories"
           />
         </template>
         <AlertMessage v-else message="У Вас нет данных для аналитики" />
@@ -83,6 +84,10 @@ import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
+import {useCategoryStore} from "@/stores/useCategoryStore.js";
+
+const categoryStore = useCategoryStore()
+const { allCategories: categories } = storeToRefs(categoryStore)
 
 // Store refs
 const transactionStore = useTransactionStore()
@@ -100,6 +105,7 @@ const currentIndex = ref(0)
 
 onMounted(async () => {
   await Promise.all([
+    categoryStore.fetchCategories(),
     transactionStore.fetchTransactions(),
     walletStore.fetchWallets()
   ])
@@ -217,5 +223,9 @@ const chartOptions = {
 <style scoped>
 :deep(canvas) {
   height: 350px !important;
+}
+.wrapper {
+  width: 100%;
+  height: auto;
 }
 </style>

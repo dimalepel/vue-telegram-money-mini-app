@@ -12,6 +12,7 @@ import {
   ArcElement
 } from 'chart.js'
 import { computed } from 'vue'
+import {TransactionTypes} from "@/constants/transactionTypes.js";
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement)
 
@@ -23,16 +24,34 @@ const props = defineProps({
   selectedDataset: {
     type: String,
     required: true
+  },
+  categories: {
+    type: Array,
+    required: true
   }
 })
 
+function getCategoryNameById(id) {
+  const category = props.categories.find(cat => cat.id === id)
+  return category?.name || 'Без категории'
+}
+
+const datasetTypeMap = {
+  income: TransactionTypes.INCOME,
+  expense: TransactionTypes.EXPENDITURE
+}
+
 const chartData = computed(() => {
   const categorySums = {}
+  const selectedType = datasetTypeMap[props.selectedDataset]
 
   for (const tx of props.transactions) {
-    if (tx.type !== props.selectedDataset) continue
-    const category = tx.category || 'Без категории'
-    categorySums[category] = (categorySums[category] || 0) + tx.amount
+    if (tx.type !== selectedType) continue
+
+    const categoryName = getCategoryNameById(tx.category_id)
+    const amount = Math.abs(tx.amount)
+
+    categorySums[categoryName] = (categorySums[categoryName] || 0) + amount
   }
 
   const labels = Object.keys(categorySums)
