@@ -49,7 +49,7 @@ const chartData = computed(() => {
     if (tx.type !== selectedType) continue
 
     const categoryName = getCategoryNameById(tx.category_id)
-    const amount = Math.abs(tx.amount)
+    const amount = (Math.abs(tx.amount)).toFixed(2)
 
     categorySums[categoryName] = (categorySums[categoryName] || 0) + amount
   }

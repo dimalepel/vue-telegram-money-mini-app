@@ -222,7 +222,9 @@ const chartOptions = {
 
 <style scoped>
 :deep(canvas) {
+  width: auto;
   height: 350px !important;
+  margin: 0 auto;
 }
 .wrapper {
   width: 100%;
