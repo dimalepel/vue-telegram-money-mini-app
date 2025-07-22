@@ -1,10 +1,13 @@
 <template>
   <div>
+    <MainHeader title="Аналитика" />
+
     <p v-if="loading || walletsLoading">Загрузка...</p>
     <p v-if="error">{{ error }}</p>
     <p v-if="walletsError">{{ walletsError }}</p>
 
     <div v-if="!loading && !walletsLoading && !error && !walletsError">
+      <!-- Месяц и навигация -->
       <div v-if="availableMonths.length > 0" class="d-flex align-items-center mb-3">
         <button class="btn btn-outline-primary me-2" @click="prevMonth" :disabled="currentIndex === 0">←</button>
         <span class="flex-grow-1 text-center fw-bold">{{ currentMonthLabel }}</span>
@@ -33,7 +36,7 @@
 
         <div class="mb-3 col-4">
           <label class="form-label d-block">&nbsp;</label>
-          <div class="btn-group w-100" role="group">
+          <div class="btn-group w-100">
             <button
                 class="btn"
                 :class="selectedChartType === 'bar' ? 'btn-primary' : 'btn-outline-primary'"
@@ -55,48 +58,71 @@
       <!-- Диаграмма -->
       <div class="wrapper">
         <template v-if="selectedMonth">
-          <BarChart
-              v-if="selectedChartType === 'bar'"
-              :data="chartData"
-              :options="chartOptions"
-          />
-          <DoughnutChart
-              v-else
-              :transactions="filteredTransactions"
-              :selectedDataset="selectedDataset"
-              :categories="categories"
-          />
+          <BarChart v-if="selectedChartType === 'bar'" :data="chartData" :options="chartOptions" />
+          <DoughnutChart v-else :transactions="filteredTransactions" :selectedDataset="selectedDataset" :categories="categories" />
         </template>
         <AlertMessage v-else message="У Вас нет данных для аналитики" />
       </div>
+
+      <!-- История операций -->
+      <ul class="w-100 ps-0 mt-4" v-if="groupedAnalyticsHistory.length > 0">
+        <template v-for="[dateLabel, items] in groupedAnalyticsHistory" :key="dateLabel">
+          <li class="fw-bold text-primary py-2">{{ dateLabel }}</li>
+          <li
+              v-for="item in items"
+              :key="item.id"
+              class="d-flex align-items-start py-2 border-bottom"
+          >
+            <i
+                :class="[
+                'bi',
+                'me-2',
+                item.amount > 0
+                  ? 'bi-arrow-down-left-circle-fill text-success'
+                  : 'bi-arrow-up-right-circle-fill text-danger'
+              ]"
+            ></i>
+            <div class="flex-grow-1">
+              <span class="text-secondary">{{ formatDate(item.date) }}</span>
+              {{ item.description }}<br />
+              <strong :class="item.amount > 0 ? 'text-success' : 'text-danger'">
+                {{ item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
+              </strong>
+            </div>
+          </li>
+        </template>
+      </ul>
+
+      <AlertMessage v-else message="Нет операций в этом месяце" />
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, onMounted, inject } from 'vue'
+import { useTransactionStore } from '@/stores/useTransactionStore'
+import { useWalletStore } from '@/stores/useWalletStore'
+import { useCategoryStore } from '@/stores/useCategoryStore'
+import { storeToRefs } from 'pinia'
+
 import BarChart from '@/components/BarChart.vue'
 import DoughnutChart from '@/components/DoughnutChart.vue'
 import AlertMessage from '@/components/AlertMessage.vue'
+import MainHeader from '@/components/MainHeader.vue'
 
-import { useTransactionStore } from '@/stores/useTransactionStore'
-import { useWalletStore } from '@/stores/useWalletStore'
-import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
-import {useCategoryStore} from "@/stores/useCategoryStore.js";
 
+const formatDate = inject('formatDate')
+
+const transactionStore = useTransactionStore()
+const walletStore = useWalletStore()
 const categoryStore = useCategoryStore()
+
+const { transactions, loading, error } = storeToRefs(transactionStore)
+const { wallets, loading: walletsLoading, error: walletsError } = storeToRefs(walletStore)
 const { allCategories: categories } = storeToRefs(categoryStore)
 
-// Store refs
-const transactionStore = useTransactionStore()
-const { transactions, loading, error } = storeToRefs(transactionStore)
-
-const walletStore = useWalletStore()
-const { wallets, loading: walletsLoading, error: walletsError } = storeToRefs(walletStore)
-
-// State
 const selectedMonth = ref('')
 const selectedWalletId = ref(null)
 const selectedDataset = ref('income')
@@ -128,9 +154,7 @@ const availableMonths = computed(() => {
   }))
 })
 
-const currentMonthLabel = computed(() =>
-    availableMonths.value[currentIndex.value]?.label || ''
-)
+const currentMonthLabel = computed(() => availableMonths.value[currentIndex.value]?.label || '')
 
 function prevMonth() {
   if (currentIndex.value > 0) {
@@ -154,30 +178,41 @@ const filteredTransactions = computed(() => {
 })
 
 const dailyData = computed(() => {
-  const days = {}
+  if (!selectedMonth.value) return []
+
+  const daysInMonth = dayjs(selectedMonth.value).daysInMonth()
+  const result = []
+
+  const txMap = {}
 
   for (const tx of filteredTransactions.value) {
-    const day = tx.date?.slice(8, 10) || '00'
-    if (!days[day]) days[day] = { income: 0, expense: 0 }
+    const day = dayjs(tx.date).format('DD')  // Надёжно вырезаем день
+
+    if (!txMap[day]) txMap[day] = { income: 0, expense: 0 }
 
     if (tx.type === 'income') {
-      days[day].income += tx.amount
+      txMap[day].income += tx.amount
     } else {
-      days[day].expense += tx.amount
+      txMap[day].expense += tx.amount
     }
   }
 
-  return Object.entries(days)
-      .sort((a, b) => a[0] - b[0])
-      .map(([day, { income, expense }]) => ({
-        day,
-        income,
-        expense
-      }))
+  for (let i = 1; i <= daysInMonth; i++) {
+    const day = i.toString().padStart(2, '0')
+    result.push({
+      day,
+      income: txMap[day]?.income || 0,
+      expense: txMap[day]?.expense || 0
+    })
+  }
+
+  return result
 })
 
 const chartData = computed(() => ({
-  labels: dailyData.value.map(d => d.day),
+  labels: dailyData.value.map(d =>
+      dayjs(`${selectedMonth.value}-${d.day}`).format('D dd')
+  ),
   datasets: [
     {
       label: selectedDataset.value === 'income' ? 'Доходы' : 'Расходы',
@@ -218,6 +253,46 @@ const chartOptions = {
     }
   }
 }
+
+const groupedAnalyticsHistory = computed(() => {
+  const groups = {}
+
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(today.getDate() - 1)
+
+  const isSameDate = (d1, d2) =>
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+
+  filteredTransactions.value.forEach(tx => {
+    const txDate = new Date(tx.date)
+    let label
+
+    if (isSameDate(txDate, today)) {
+      label = 'Сегодня'
+    } else if (isSameDate(txDate, yesterday)) {
+      label = 'Вчера'
+    } else {
+      label = txDate.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
+    }
+
+    if (!groups[label]) {
+      groups[label] = []
+    }
+    groups[label].push(tx)
+  })
+
+  return Object.entries(groups).sort((a, b) => {
+    const getFirstDate = group => new Date(group[1][0].date)
+    return getFirstDate(b) - getFirstDate(a)
+  })
+})
 </script>
 
 <style scoped>
