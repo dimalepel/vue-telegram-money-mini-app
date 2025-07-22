@@ -56,42 +56,46 @@
       </div>
 
       <!-- Диаграмма -->
-      <div class="wrapper">
-        <template v-if="selectedMonth">
-          <BarChart v-if="selectedChartType === 'bar'" :data="chartData" :options="chartOptions" />
-          <DoughnutChart v-else :transactions="filteredTransactions" :selectedDataset="selectedDataset" :categories="categories" />
-        </template>
-        <AlertMessage v-else message="У Вас нет данных для аналитики" />
-      </div>
+      <div v-if="groupedAnalyticsHistory.length > 0">
 
-      <!-- История операций -->
-      <ul class="w-100 ps-0 mt-4" v-if="groupedAnalyticsHistory.length > 0">
-        <template v-for="[dateLabel, items] in groupedAnalyticsHistory" :key="dateLabel">
-          <li class="fw-bold text-primary py-2">{{ dateLabel }}</li>
-          <li
-              v-for="item in items"
-              :key="item.id"
-              class="d-flex align-items-start py-2 border-bottom"
-          >
-            <i
-                :class="[
-                'bi',
-                'me-2',
-                item.amount > 0
-                  ? 'bi-arrow-down-left-circle-fill text-success'
-                  : 'bi-arrow-up-right-circle-fill text-danger'
-              ]"
-            ></i>
-            <div class="flex-grow-1">
-              <span class="text-secondary">{{ formatDate(item.date) }}</span>
-              {{ item.description }}<br />
-              <strong :class="item.amount > 0 ? 'text-success' : 'text-danger'">
-                {{ item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
-              </strong>
-            </div>
-          </li>
-        </template>
-      </ul>
+        <div class="wrapper">
+          <template v-if="selectedMonth">
+            <BarChart v-if="selectedChartType === 'bar'" :data="chartData" :options="chartOptions" />
+            <DoughnutChart v-else :transactions="filteredTransactions" :selectedDataset="selectedDataset" :categories="categories" />
+          </template>
+          <AlertMessage v-else message="У Вас нет данных для аналитики" />
+        </div>
+
+        <!-- История операций -->
+        <ul class="w-100 ps-0 mt-4">
+          <template v-for="[dateLabel, items] in groupedAnalyticsHistory" :key="dateLabel">
+            <li class="fw-bold text-primary py-2">{{ dateLabel }}</li>
+            <li
+                v-for="item in items"
+                :key="item.id"
+                class="d-flex align-items-start py-2 border-bottom"
+            >
+              <i
+                  :class="[
+                  'bi',
+                  'me-2',
+                  item.amount > 0
+                    ? 'bi-arrow-down-left-circle-fill text-success'
+                    : 'bi-arrow-up-right-circle-fill text-danger'
+                ]"
+              ></i>
+              <div class="flex-grow-1">
+                <span class="text-secondary">{{ formatDate(item.date) }}</span>
+                {{ item.description }}<br />
+                <strong :class="item.amount > 0 ? 'text-success' : 'text-danger'">
+                  {{ item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
+                </strong>
+              </div>
+            </li>
+          </template>
+        </ul>
+
+      </div>
 
       <AlertMessage v-else message="Нет операций в этом месяце" />
     </div>
@@ -182,27 +186,20 @@ const dailyData = computed(() => {
 
   const daysInMonth = dayjs(selectedMonth.value).daysInMonth()
   const result = []
-
   const txMap = {}
 
-  for (const tx of filteredTransactions.value) {
-    const day = dayjs(tx.date).format('DD')  // Надёжно вырезаем день
+  for (const tx of filteredTransactionsByType.value) {
+    const day = dayjs(tx.date).format('DD')
 
-    if (!txMap[day]) txMap[day] = { income: 0, expense: 0 }
-
-    if (tx.type === 'income') {
-      txMap[day].income += tx.amount
-    } else {
-      txMap[day].expense += tx.amount
-    }
+    if (!txMap[day]) txMap[day] = 0
+    txMap[day] += tx.amount
   }
 
   for (let i = 1; i <= daysInMonth; i++) {
     const day = i.toString().padStart(2, '0')
     result.push({
       day,
-      income: txMap[day]?.income || 0,
-      expense: txMap[day]?.expense || 0
+      amount: txMap[day] || 0
     })
   }
 
@@ -218,7 +215,7 @@ const chartData = computed(() => ({
       label: selectedDataset.value === 'income' ? 'Доходы' : 'Расходы',
       backgroundColor: selectedDataset.value === 'income' ? '#4caf50' : '#f44336',
       data: dailyData.value.map(d =>
-          selectedDataset.value === 'income' ? d.income : -d.expense
+          selectedDataset.value === 'income' ? d.amount : -d.amount
       )
     }
   ]
@@ -254,6 +251,14 @@ const chartOptions = {
   }
 }
 
+const filteredTransactionsByType = computed(() =>
+    filteredTransactions.value.filter(tx =>
+        selectedDataset.value === 'income'
+            ? tx.amount > 0
+            : tx.amount < 0
+    )
+)
+
 const groupedAnalyticsHistory = computed(() => {
   const groups = {}
 
@@ -266,7 +271,7 @@ const groupedAnalyticsHistory = computed(() => {
       d1.getMonth() === d2.getMonth() &&
       d1.getDate() === d2.getDate()
 
-  filteredTransactions.value.forEach(tx => {
+  filteredTransactionsByType.value.forEach(tx => {
     const txDate = new Date(tx.date)
     let label
 
