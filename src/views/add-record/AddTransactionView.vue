@@ -35,6 +35,15 @@ const userStore = useUserStore()
 const categoryStore = useCategoryStore()
 
 const isIncome = ref(route.params.type === TransactionTypes.INCOME)
+const isTransfer = ref(route.params.type === TransactionTypes.TRANSFER)
+
+const fromWalletId = ref('')
+const toWalletId = ref('')
+
+const transactionTitle = computed(() => {
+  if (isTransfer.value) return 'Перевод'
+  return isIncome.value ? 'Доход' : 'Расход'
+})
 
 walletStore.fetchWallets?.()
 categoryStore.fetchCategories?.()
@@ -83,30 +92,64 @@ async function onSaveCategory(name) {
 }
 
 const handleSubmit = async () => {
-  if (!amount.value || !date.value || !walletId.value || !categoryId.value) return
-  let parsedDate = Array.isArray(date.value) ? date.value[0] : date.value
+  if (!amount.value || !date.value) return;
+
+  let parsedDate = Array.isArray(date.value) ? date.value[0] : date.value;
+
   if (!(parsedDate instanceof Date)) {
-    parsedDate = dayjs(date.value, 'DD.MM.YYYY').toDate()
+    parsedDate = dayjs(date.value, 'DD.MM.YYYY').toDate();
   }
-  const dateForSaving = parsedDate.toISOString()
+
+  const dateForSaving = parsedDate.toISOString();
 
   try {
-    await transactionStore.addTransaction({
-      amount: isIncome.value ? Number(amount.value) : -Number(amount.value),
-      date: dateForSaving, // ← ISO 8601 (UTC)
-      description: description.value,
-      type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
-      user_id: userStore.id,
-      wallet_id: Number(walletId.value),
-      category_id: Number(categoryId.value),
-    })
+    const amt = Number(amount.value);
 
-    const delta = isIncome.value ? Number(amount.value) : -Number(amount.value)
-    await walletStore.updateWalletBalance(Number(walletId.value), delta)
+    if (isTransfer.value) {
+      console.log(22)
+      if (!fromWalletId.value || !toWalletId.value || fromWalletId.value === toWalletId.value) {
+        alert('Выберите разные кошельки для перевода')
+        return;
+      }
 
-    router.push('/history')
+      await transactionStore.addTransaction({
+        amount: amt,
+        date: dateForSaving,
+        description: description.value || 'Перевод',
+        type: TransactionTypes.TRANSFER,
+        user_id: userStore.id,
+        from_wallet_id: Number(fromWalletId.value),
+        to_wallet_id: Number(toWalletId.value),
+        category_id: null,
+      });
+
+      await walletStore.updateWalletBalance(Number(fromWalletId.value), -amt);
+      await walletStore.updateWalletBalance(Number(toWalletId.value), amt);
+    } else {
+      if (!walletId.value || !categoryId.value) {
+        alert('Выберите депозит и категорию')
+        return;
+      }
+
+      const delta = isIncome.value ? Number(amt) : -Number(amt)
+
+      await transactionStore.addTransaction({
+        amount: delta,
+        date: dateForSaving, // ← ISO 8601 (UTC)
+        description: description.value,
+        type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
+        user_id: userStore.id,
+        wallet_id: Number(walletId.value),
+        category_id: Number(categoryId.value),
+      })
+
+      await walletStore.updateWalletBalance(Number(walletId.value), delta)
+    }
+
+    router.push('/history');
   } catch (e) {
     console.error('Ошибка при добавлении операции:', e)
+    alert('Не удалось сохранить операцию. Попробуйте снова.')
   }
 }
 </script>
@@ -115,7 +158,7 @@ const handleSubmit = async () => {
   <div class="text-center position-relative">
     <router-link to="/add-record" class="btn-close position-absolute" aria-label="Закрыть" />
 
-    <MainHeader :title="`${ isIncome ? 'Доход' : 'Расход' }`"/>
+    <MainHeader :title="transactionTitle" />
 
     <form @submit.prevent="handleSubmit" class="flex-grow-1 d-flex flex-column">
       <div class="mb-3">
@@ -128,7 +171,8 @@ const handleSubmit = async () => {
         <Flatpickr v-model="date" :config="config" class="form-control" />
       </div>
 
-      <div class="mb-3">
+      <!-- Депозиты -->
+      <div v-if="!isTransfer" class="mb-3">
         <label class="form-label">Депозит</label>
         <select v-model="walletId" class="form-select">
           <option value="">Выберите депозит</option>
@@ -138,7 +182,27 @@ const handleSubmit = async () => {
         </select>
       </div>
 
-      <div class="mb-3">
+      <!-- Перевод: откуда и куда -->
+      <div v-if="isTransfer" class="mb-3">
+        <label class="form-label">С кошелька</label>
+        <select v-model="fromWalletId" class="form-select mb-2">
+          <option value="">Выберите источник</option>
+          <option :value="wallet.id" v-for="wallet in walletStore.wallets" :key="'from-' + wallet.id">
+            {{ wallet.name }}
+          </option>
+        </select>
+
+        <label class="form-label">На кошелек</label>
+        <select v-model="toWalletId" class="form-select">
+          <option value="">Выберите получателя</option>
+          <option :value="wallet.id" v-for="wallet in walletStore.wallets" :key="'to-' + wallet.id">
+            {{ wallet.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Категория только для НЕ Transfer -->
+      <div v-if="!isTransfer" class="mb-3">
         <label class="form-label">Категория</label>
         <div class="row">
           <div class="col-9">
@@ -150,12 +214,11 @@ const handleSubmit = async () => {
             </select>
           </div>
           <div class="col-3">
-            <button type="button" class="btn btn-outline-success w-100"  @click="openAddModal">
+            <button type="button" class="btn btn-outline-success w-100" @click="openAddModal">
               <i class="bi bi-plus-lg"></i>
             </button>
           </div>
         </div>
-
       </div>
 
       <div class="mb-3">

@@ -37,15 +37,15 @@ watch(amount, (newVal) => {
     <div class="d-flex flex-column justify-content-center flex-grow-1">
       <input v-model="amount" type="text" class="mb-3 display-1 fw-medium text-center border-0" placeholder="0" autofocus />
       <div class="row">
-        <div class="col-6">
+        <div class="col-4">
           <button @click="goTo(TransactionTypes.EXPENDITURE)" class="btn btn-danger mb-3 w-100">Расход</button>
         </div>
-        <div class="col-6">
+        <div class="col-4">
           <button @click="goTo(TransactionTypes.INCOME)" class="btn btn-success w-100">Доход</button>
         </div>
-        <!--div class="col-4">
-          <button class="btn btn-warning w-100">Перевод</button>
-        </div-->
+        <div class="col-4">
+          <button @click="goTo(TransactionTypes.TRANSFER)" class="btn btn-warning w-100">Перевод</button>
+        </div>
       </div>
     </div>
   </div>

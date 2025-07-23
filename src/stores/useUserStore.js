@@ -63,6 +63,8 @@ export const useUserStore = defineStore('user', {
         //console.log(res.data.token)
         const storageData = {
           id: res.data.data.id,
+          telegram_id: res.data.data.telegram_id,
+          first_name: res.data.data.first_name,
           token: res.data.token
         }
         this._setUser(storageData)

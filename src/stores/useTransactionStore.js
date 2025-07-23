@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import dayjs from 'dayjs' // ✅ Правильный импорт
 import { useUserStore } from './useUserStore'
-import {useWalletStore} from "@/stores/useWalletStore.js";
+import { useWalletStore } from "@/stores/useWalletStore";
 
 const baseURL = import.meta.env.VITE_API_URL
 
