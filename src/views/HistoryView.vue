@@ -6,6 +6,7 @@ import {storeToRefs} from 'pinia'
 import AlertMessage from "@/components/AlertMessage.vue";
 import MainHeader from "@/components/MainHeader.vue";
 import {TransactionTypes} from "@/constants/transactionTypes";
+import { useCategoryStore } from '@/stores/useCategoryStore'
 
 const transactionStore = useTransactionStore()
 const walletStore = useWalletStore()
@@ -15,10 +16,12 @@ const {transactions, loading, error} = storeToRefs(transactionStore)
 const {wallets} = storeToRefs(walletStore)
 
 const selectedWalletId = ref('')
+const categoryStore = useCategoryStore()
 
 onMounted(() => {
   transactionStore.fetchTransactions()
   walletStore.fetchWallets?.()
+  categoryStore.fetchCategories?.()
 })
 
 const filteredHistory = computed(() => {
@@ -74,6 +77,11 @@ function deleteTransaction(id) {
     transactionStore.deleteTransaction(id)
   }
 }
+
+function getCategoryById(id) {
+  console.log(categoryStore.categories.find(cat => cat.id === id))
+  return categoryStore.categories.find(cat => cat.id === id)
+}
 </script>
 
 <template>
@@ -101,10 +109,13 @@ function deleteTransaction(id) {
 
             <div class="flex-grow-1">
               <span class="text-secondary">{{ formatDate(item.date) }}</span>
-              {{ item.description }}<br/>
-              <strong :class="item.type === TransactionTypes.TRANSFER ? 'text-info' : item.amount > 0 ? 'text-success' : 'text-danger'">
-                {{ item.type === TransactionTypes.TRANSFER ? `${item.amount.toFixed(2)}` : item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
-              </strong>
+              {{ item.description }}
+              <div class="d-flex align-items-center flex-wrap">
+                <strong :class="['me-2', item.type === TransactionTypes.TRANSFER ? 'text-info' : item.amount > 0 ? 'text-success' : 'text-danger']">
+                  {{ item.type === TransactionTypes.TRANSFER ? `${item.amount.toFixed(2)}` : item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
+                </strong>
+                <span v-if="item.type !== TransactionTypes.TRANSFER" class="category-name"><i :style="`background-color: ${getCategoryById(item.category_id)?.color || '#cccccc'}`"></i> {{ getCategoryById(item.category_id)?.name || '—' }}</span>
+              </div>
             </div>
 
             <button v-if="item.type !== TransactionTypes.TRANSFER" type="button" class="btn btn-outline-danger ms-2" @click="deleteTransaction(item.id)">
@@ -127,5 +138,20 @@ function deleteTransaction(id) {
 
 .transaction-icon {
   font-size: 1.5rem;
+}
+
+.category-name {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #b5afaf;
+}
+
+.category-name i {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.3rem;
+  background-color: red;
+  border-radius: 100%;
 }
 </style>

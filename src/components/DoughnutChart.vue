@@ -13,6 +13,7 @@ import {
 } from 'chart.js'
 import { computed } from 'vue'
 import {TransactionTypes} from "@/constants/transactionTypes.js";
+import { useCategoryStore } from '@/stores/useCategoryStore'
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement)
 
@@ -31,9 +32,15 @@ const props = defineProps({
   }
 })
 
+const categoryStore = useCategoryStore()
+
 function getCategoryNameById(id) {
   const category = props.categories.find(cat => cat.id === id)
   return category?.name || 'Без категории'
+}
+
+function getCategoryById(id) {
+  return categoryStore.categories.find(cat => cat.id === id)
 }
 
 const datasetTypeMap = {
@@ -43,19 +50,25 @@ const datasetTypeMap = {
 
 const chartData = computed(() => {
   const categorySums = {}
+  const categoryColors = {}
   const selectedType = datasetTypeMap[props.selectedDataset]
 
   for (const tx of props.transactions) {
     if (tx.type !== selectedType) continue
 
-    const categoryName = getCategoryNameById(tx.category_id)
+    const category = getCategoryById(tx.category_id)
+    if (!category) continue
+
+    const categoryName = category.name
     const amount = Math.abs(tx.amount)
 
     categorySums[categoryName] = (categorySums[categoryName] || 0) + amount
+    categoryColors[categoryName] = category.color || '#cccccc' // fallback
   }
 
   const labels = Object.keys(categorySums)
   const data = Object.values(categorySums)
+  const backgroundColor = labels.map(name => categoryColors[name])
 
   return {
     labels,
@@ -63,11 +76,7 @@ const chartData = computed(() => {
       {
         label: 'Категории',
         data,
-        backgroundColor: [
-          '#f44336', '#4caf50', '#2196f3', '#ff9800',
-          '#9c27b0', '#3f51b5', '#009688', '#e91e63',
-          '#00bcd4', '#cddc39'
-        ]
+        backgroundColor
       }
     ]
   }

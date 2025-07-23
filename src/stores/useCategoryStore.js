@@ -59,7 +59,7 @@ export const useCategoryStore = defineStore('category', {
       }
     },
 
-    async createCategory(name, type) {
+    async createCategory(name, type, color) {
       const userStore = useUserStore()
       this.loading = true
       this.error = null
@@ -68,6 +68,7 @@ export const useCategoryStore = defineStore('category', {
         const response = await axios.post(`${baseURL}/categories`, {
           name,
           type,              // "income" или "expenditure"
+          color,
           user_id: userStore.id,
         })
 
@@ -76,6 +77,25 @@ export const useCategoryStore = defineStore('category', {
       } catch (error) {
         this.error = error.response?.data?.message || 'Ошибка при создании категории'
         console.error('Ошибка создания категории:', error)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateCategory(id, name, color) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const response = await axios.patch(`${baseURL}/categories/${id}`, { name, color })
+
+        const index = this.categories.findIndex(cat => cat.id === id)
+        if (index !== -1) {
+          this.categories[index] = response.data
+        }
+      } catch (error) {
+        this.error = error.response?.data?.message || 'Ошибка при обновлении категории'
+        console.error('Ошибка обновления категории:', error)
       } finally {
         this.loading = false
       }

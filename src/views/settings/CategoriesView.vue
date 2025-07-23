@@ -33,16 +33,29 @@ const modalRef = ref(null)
 let modalInstance = null
 
 const newCategoryName = ref('')
+const newCategoryColor = ref('')
 
 function openAddModal() {
   newCategoryName.value = ''
+  newCategoryColor.value = ''
+
   if (modalInstance) {
     modalInstance.show()
   }
 }
 
-async function onSaveCategory(name) {
-  await categoryStore.createCategory(name, type.value)
+function editCategory(category) {
+  modalRef.value?.open(category)
+  modalInstance?.show()
+}
+
+async function onSaveCategory(category) {
+  if (category.isEditMode) {
+    await categoryStore.updateCategory(category.id, category.name, category.color)
+  } else {
+    await categoryStore.createCategory(category.name, type.value, category.color)
+  }
+
   modalInstance.hide()
 }
 </script>
@@ -61,7 +74,10 @@ async function onSaveCategory(name) {
       <ul v-if="filteredCategories.length > 0" class="list-group">
         <li v-for="cat in filteredCategories" :key="cat.id" class="list-group-item d-flex align-items-center">
           {{ cat.name }}
-          <button type="button" class="btn btn-outline-danger ms-auto" @click="deleteCategory(cat.id)">
+          <button class="btn btn-outline-primary ms-auto" @click="editCategory(cat)">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button type="button" class="btn btn-outline-danger ms-2" @click="deleteCategory(cat.id)">
             <i class="bi bi-trash"></i>
           </button>
         </li>
@@ -83,11 +99,7 @@ async function onSaveCategory(name) {
 </template>
 
 <style scoped>
-.btn-outline-danger {
-  font-size: 0.75rem;
-  padding: 0.2rem 0.4rem;
-}
-
+.btn-outline-primary,
 .btn-outline-danger {
   font-size: 0.75rem;
   padding: 0.2rem 0.4rem;
