@@ -51,7 +51,7 @@ onMounted(() => {
     <p v-if="error">{{ error }}</p>
 
     <div class="flex-grow-1 d-flex flex-column" v-if="!loading && !error">
-      <ul v-if="wallets.length > 0" class="w-100 ps-0" >
+      <ul v-if="wallets.length > 0" class="w-100 mb-0 ps-0" >
         <li class="d-flex p-2 mb-3 border rounded align-items-start" v-for="item in wallets">
           <i :class="['bi', 'fs-2', 'me-2', 'lh-1', 'text-primary', `bi-${item['wallet-type'].type}`]"></i>
           <div class="flex-grow-1">
