@@ -1,8 +1,11 @@
 <template>
   <div>
-    <MainHeader title="Аналитика" />
+    <MainHeader title="Аналитика"/>
 
-    <p v-if="loading || walletsLoading">Загрузка...</p>
+    <div class="d-flex align-items-center justify-content-center flex-grow-1" v-if="loading || walletsLoading">
+      <SvgLoader />
+    </div>
+
     <p v-if="error">{{ error }}</p>
     <p v-if="walletsError">{{ walletsError }}</p>
 
@@ -60,54 +63,51 @@
 
         <div class="wrapper">
           <template v-if="selectedMonth">
-            <BarChart v-if="selectedChartType === 'bar'" :data="chartData" :options="chartOptions" />
-            <DoughnutChart v-else :transactions="filteredTransactions" :selectedDataset="selectedDataset" :categories="categories" />
+            <BarChart v-if="selectedChartType === 'bar'" :data="chartData" :options="chartOptions"/>
+            <DoughnutChart v-else :transactions="filteredTransactions" :selectedDataset="selectedDataset" :categories="categories"/>
           </template>
-          <AlertMessage v-else message="У Вас нет данных для аналитики" />
+          <AlertMessage v-else message="У Вас нет данных для аналитики"/>
         </div>
 
         <!-- История операций -->
         <ul class="w-100 ps-0 mt-4">
           <template v-for="[dateLabel, items] in groupedAnalyticsHistory" :key="dateLabel">
             <li class="fw-bold text-primary py-2">{{ dateLabel }}</li>
-            <li
-                v-for="item in items"
-                :key="item.id"
-                class="d-flex align-items-start py-2 border-bottom"
-            >
-              <i
-                  :class="[
-                  'bi',
-                  'me-2',
-                  item.amount > 0
-                    ? 'bi-arrow-down-left-circle-fill text-success'
-                    : 'bi-arrow-up-right-circle-fill text-danger'
-                ]"
-              ></i>
+            <li v-for="item in items" :key="item.id" class="d-flex align-items-start py-2 border-bottom transaction-card">
+              <i v-if="item.type === TransactionTypes.TRANSFER" class="bi me-2 bi-cloud-check-fill text-info transaction-icon"></i>
+              <i v-else :class="['bi','me-2',item.amount > 0 ? 'bi-cloud-arrow-down-fill text-success transaction-icon' : 'bi-cloud-arrow-up-fill text-danger transaction-icon']"></i>
+
               <div class="flex-grow-1">
                 <span class="text-secondary">{{ formatDate(item.date) }}</span>
-                {{ item.description }}<br />
-                <strong :class="item.amount > 0 ? 'text-success' : 'text-danger'">
-                  {{ item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
-                </strong>
+                {{ item.description }}
+                <div class="d-flex align-items-center flex-wrap">
+                  <strong :class="['me-2', item.type === TransactionTypes.TRANSFER ? 'text-info' : item.amount > 0 ? 'text-success' : 'text-danger']">
+                    {{ item.type === TransactionTypes.TRANSFER ? `${item.amount.toFixed(2)}` : item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
+                  </strong>
+                  <span v-if="item.type !== TransactionTypes.TRANSFER" class="category-name"><i :style="`background-color: ${getCategoryById(item.category_id)?.color || '#cccccc'}`"></i> {{ getCategoryById(item.category_id)?.name || '—' }}</span>
+                </div>
               </div>
+
+              <button v-if="item.type !== TransactionTypes.TRANSFER" type="button" class="btn btn-outline-danger ms-2" @click="deleteTransaction(item.id)">
+                <i class="bi bi-trash"></i>
+              </button>
             </li>
           </template>
         </ul>
 
       </div>
 
-      <AlertMessage v-else message="Нет операций в этом месяце" />
+      <AlertMessage v-else message="Нет операций в этом месяце"/>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
-import { useTransactionStore } from '@/stores/useTransactionStore'
-import { useWalletStore } from '@/stores/useWalletStore'
-import { useCategoryStore } from '@/stores/useCategoryStore'
-import { storeToRefs } from 'pinia'
+import {ref, computed, onMounted, inject} from 'vue'
+import {useTransactionStore} from '@/stores/useTransactionStore'
+import {useWalletStore} from '@/stores/useWalletStore'
+import {useCategoryStore} from '@/stores/useCategoryStore'
+import {storeToRefs} from 'pinia'
 
 import BarChart from '@/components/BarChart.vue'
 import DoughnutChart from '@/components/DoughnutChart.vue'
@@ -116,6 +116,8 @@ import MainHeader from '@/components/MainHeader.vue'
 
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
+import {TransactionTypes} from "../constants/transactionTypes.js";
+import SvgLoader from "@/components/SvgLoader.vue";
 
 const formatDate = inject('formatDate')
 
@@ -123,9 +125,9 @@ const transactionStore = useTransactionStore()
 const walletStore = useWalletStore()
 const categoryStore = useCategoryStore()
 
-const { transactions, loading, error } = storeToRefs(transactionStore)
-const { wallets, loading: walletsLoading, error: walletsError } = storeToRefs(walletStore)
-const { allCategories: categories } = storeToRefs(categoryStore)
+const {transactions, loading, error} = storeToRefs(transactionStore)
+const {wallets, loading: walletsLoading, error: walletsError} = storeToRefs(walletStore)
+const {allCategories: categories} = storeToRefs(categoryStore)
 
 const selectedMonth = ref('')
 const selectedWalletId = ref(null)
@@ -231,15 +233,15 @@ const chartOptions = {
       display: true,
       text: 'Доходы и расходы по дням',
       color: '#333',
-      font: { size: 18, family: 'Arial', weight: 'bold' },
-      padding: { top: 10, bottom: 30 }
+      font: {size: 18, family: 'Arial', weight: 'bold'},
+      padding: {top: 10, bottom: 30}
     },
-    legend: { display: false }
+    legend: {display: false}
   },
   scales: {
     x: {
-      grid: { display: false },
-      ticks: { maxRotation: 0, minRotation: 0 },
+      grid: {display: false},
+      ticks: {maxRotation: 0, minRotation: 0},
       barPercentage: isMobile ? 0.9 : 0.8,
       categoryPercentage: isMobile ? 1 : 0.9,
       maxBarThickness: isMobile ? 50 : 40
@@ -298,6 +300,16 @@ const groupedAnalyticsHistory = computed(() => {
     return getFirstDate(b) - getFirstDate(a)
   })
 })
+
+function getCategoryById(id) {
+  return categoryStore.categories.find(cat => cat.id === id)
+}
+
+function deleteTransaction(id) {
+  if (confirm('Удалить транзакцию?')) {
+    transactionStore.deleteTransaction(id)
+  }
+}
 </script>
 
 <style scoped>
@@ -308,11 +320,37 @@ const groupedAnalyticsHistory = computed(() => {
   max-height: 450px !important;
   margin: 0 auto;
 }
+
 .wrapper {
   width: 100%;
   height: auto;
 }
+
 .row {
   --bs-gutter-x: 0.5rem;
+}
+
+.btn-outline-danger {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.4rem;
+}
+
+.transaction-icon {
+  font-size: 1.5rem;
+}
+
+.category-name {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #b5afaf;
+}
+
+.category-name i {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.3rem;
+  background-color: red;
+  border-radius: 100%;
 }
 </style>

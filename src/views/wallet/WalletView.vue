@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia";
 import AlertMessage from "@/components/AlertMessage.vue";
 import MainHeader from "@/components/MainHeader.vue";
 import DeleteWalletModal from "@/components/DeleteWalletModal.vue";
+import SvgLoader from "@/components/SvgLoader.vue";
 
 const walletStore = useWalletStore()
 const { wallets, loading, error } = storeToRefs(walletStore)
@@ -43,10 +44,13 @@ onMounted(() => {
 <template>
   <div>
     <MainHeader title="Депозиты"/>
-    <p v-if="loading">Загрузка...</p>
+
+    <div class="d-flex align-items-center justify-content-center flex-grow-1" v-if="loading">
+      <SvgLoader />
+    </div>
     <p v-if="error">{{ error }}</p>
 
-    <div v-if="!loading && !error">
+    <div class="flex-grow-1 d-flex flex-column" v-if="!loading && !error">
       <ul v-if="wallets.length > 0" class="w-100 ps-0" >
         <li class="d-flex p-2 mb-3 border rounded align-items-start" v-for="item in wallets">
           <i :class="['bi', 'fs-2', 'me-2', 'lh-1', 'text-primary', `bi-${item['wallet-type'].type}`]"></i>
@@ -66,12 +70,12 @@ onMounted(() => {
       </ul>
       <AlertMessage v-else message="У Вас нет доступных депозитов" />
 
+      <router-link to="/wallet/add-wallet" class="btn btn-success mt-auto">
+        <i class="bi bi-plus-lg me-1"></i> Новый депозит
+      </router-link>
+
       <DeleteWalletModal :show="showModal" @close="handleModalClose" />
     </div>
-
-    <router-link to="/wallet/add-wallet" class="btn btn-success mt-auto">
-      <i class="bi bi-plus-lg me-1"></i> Новый депозит
-    </router-link>
   </div>
 </template>
 

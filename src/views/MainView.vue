@@ -45,7 +45,7 @@ onMounted( async () => {
 
 <template>
   <div class="align-items-center justify-content-center text-center">
-    <SvgLoader class="mb-3" />
+    <SvgLoader />
     <div v-if="showFallbackNotice" class="alert alert-warning fade show" role="alert">
       Пользователь Telegram не найден, используется тестовый аккаунт.
     </div>

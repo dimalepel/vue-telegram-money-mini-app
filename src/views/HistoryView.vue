@@ -79,7 +79,6 @@ function deleteTransaction(id) {
 }
 
 function getCategoryById(id) {
-  console.log(categoryStore.categories.find(cat => cat.id === id))
   return categoryStore.categories.find(cat => cat.id === id)
 }
 </script>
