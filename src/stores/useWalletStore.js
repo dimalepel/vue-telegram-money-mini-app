@@ -17,7 +17,7 @@ export const useWalletStore = defineStore('wallet', {
 
       const showArchived = userStore.settings?.show_archived_data === true
 
-      const url = `${baseURL}/wallets?_relations=wallet-types&user_id=${userStore.id}` +
+      const url = `${baseURL}/wallets?_relations=wallet-types&sortBy=-created_at&user_id=${userStore.id}` +
         (showArchived ? '' : '&is_archived=false');
 
       this.loading = true
