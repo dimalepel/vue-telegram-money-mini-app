@@ -13,6 +13,7 @@ const router = useRouter()
 const route = useRoute()
 
 const isEditing = ref(false)
+const isArchived = ref(false)
 const walletId = ref(null)
 
 const name = ref('')
@@ -28,10 +29,12 @@ onMounted(async () => {
     isEditing.value = true
     walletId.value = Number(route.params.walletId)
     const existing = walletStore.wallets.find(w => w.id === walletId.value)
+
     if (existing) {
       name.value = existing.name
       typeId.value = Number(existing['wallet-type']?.id || 0)
       balance.value = existing.balance
+      isArchived.value = existing.is_archived
     } else {
       error.value = 'Депозит не найден'
     }
@@ -50,14 +53,16 @@ const handleSubmit = async () => {
       await walletStore.editWallet(walletId.value, {
         name: name.value,
         typeId: Number(typeId.value),
-        balance: Number(balance.value)
+        balance: Number(balance.value),
+        isArchived: isArchived.value
       })
     } else {
       await walletStore.addWallet({
         name: name.value,
         typeId: Number(typeId.value),
         balance: Number(balance.value),
-        userId: userStore.id
+        userId: userStore.id,
+        isArchived: isArchived.value
       })
     }
     router.push('/wallet')
@@ -102,6 +107,11 @@ watch(balance, (newVal) => {
       <div class="mb-3">
         <label class="form-label">Сумма депозита</label>
         <input v-model="balance" type="text" class="form-control" placeholder="0"/>
+      </div>
+
+      <div class="form-check form-switch mb-3 d-flex justify-content-between ps-0">
+        <label class="form-check-label flex-grow-1 text-start" for="toggle-archive">Архивировать</label>
+        <input v-model="isArchived" class="form-check-input" type="checkbox" role="switch" id="toggle-archive">
       </div>
 
       <p v-if="error" class="text-danger mb-3">{{ error }}</p>

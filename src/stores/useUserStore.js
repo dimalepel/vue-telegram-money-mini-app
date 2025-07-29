@@ -12,7 +12,10 @@ export const useUserStore = defineStore('user', {
     status: '',
     email: '',
     isAuthenticated: false,
-    token: ''
+    token: '',
+    settings: {
+      show_archived_data: false,
+    }
   }),
 
   actions: {
@@ -69,15 +72,16 @@ export const useUserStore = defineStore('user', {
         }
         this._setUser(storageData)
 
-
-
       } catch (error) {
         try {
           const registerRes = await axios.post(`${baseURL}/register`, {
             fullName: tgUser.first_name,
             telegram_id: tgUser.id,
             email: `${tgUser.id}_mymoney@app.com`,
-            password: `${tgUser.id}`
+            password: `${tgUser.id}`,
+            settings: {
+              show_archived_data: false
+            }
           }, {
             headers: {
               Accept: "application/json",
@@ -101,6 +105,29 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    async updateSettings(newSettings) {
+      if (!this.id || !this.token) {
+        console.warn('Нельзя обновить настройки — пользователь не авторизован')
+        return
+      }
+
+      try {
+        const response = await axios.patch(`${baseURL}/users/${this.id}`, {
+          settings: newSettings
+        }, {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+            "Content-Type": "application/json"
+          }
+        })
+
+        this.settings = response.data.settings
+        console.log('Настройки успешно обновлены:', this.settings)
+      } catch (err) {
+        console.error('Ошибка при обновлении настроек:', err.response?.status, err.response?.data)
+      }
+    },
+
     _setUser(data) {
       this.id = data.id
       this.telegramId = data.telegram_id
@@ -110,6 +137,7 @@ export const useUserStore = defineStore('user', {
       this.email = data.email || ''
       this.isAuthenticated = true
       this.token = data.token
+      this.settings = data.settings || { show_archived_data: false }
     },
 
     logout() {

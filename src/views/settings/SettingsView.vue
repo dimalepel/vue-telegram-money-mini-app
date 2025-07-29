@@ -1,9 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import {ref, onMounted, watch} from 'vue'
 import { Modal } from 'bootstrap' // ✅ Правильный импорт!
 import MainHeader from "@/components/MainHeader.vue"
 import Flatpickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
+import debounce from 'lodash.debounce'
+import {useUserStore} from "@/stores/useUserStore";
+
+const userStore = useUserStore()
 
 // Для версии приложения
 const appVersion = __APP_VERSION__
@@ -11,6 +15,8 @@ const appVersion = __APP_VERSION__
 // Логика переключателя
 const remindersEnabled = ref(false)
 const reminderTime = ref('17:30')
+
+const showArchivedData = ref(false)
 
 // Flatpickr конфиг для выбора только времени
 const timeConfig = {
@@ -24,7 +30,12 @@ let timeModal // Переменная для экземпляра модалки
 
 onMounted(() => {
   const modalElement = document.getElementById('timePickerModal')
-  timeModal = new Modal(modalElement) // ✅ Используем импортированный класс, не window.bootstrap!
+  timeModal = new Modal(modalElement)
+
+  const settings = userStore.settings || {}
+  remindersEnabled.value = settings.reminders_enabled ?? false
+  reminderTime.value = settings.reminder_time ?? '17:30'
+  showArchivedData.value = settings.show_archived_data ?? false
 })
 
 function openTimePicker() {
@@ -35,6 +46,19 @@ function saveTime() {
   timeModal.hide()
   // Здесь можно вызывать API для сохранения времени
 }
+
+const debouncedSave = debounce(() => {
+  userStore.updateSettings({
+    reminders_enabled: remindersEnabled.value,
+    reminder_time: reminderTime.value,
+    show_archived_data: showArchivedData.value
+  })
+}, 1000)
+
+watch(
+    [remindersEnabled, reminderTime, showArchivedData],
+    debouncedSave
+)
 </script>
 
 <template>
@@ -57,51 +81,35 @@ function saveTime() {
       <div class="btn btn-setting btn-outline-secondary text-start d-flex align-items-center justify-content-between">
         Напоминания
         <div class="form-check form-switch">
-          <input
-              class="form-check-input"
-              type="checkbox"
-              v-model="remindersEnabled"
-          />
+          <input class="form-check-input" type="checkbox" v-model="remindersEnabled" />
         </div>
       </div>
 
       <!-- Кнопка для открытия модалки -->
-      <div
-          v-if="remindersEnabled"
-          class="btn btn-outline-secondary text-start d-flex align-items-center"
-          @click="openTimePicker"
-      >
+      <div v-if="remindersEnabled" class="btn btn-outline-secondary text-start d-flex align-items-center" @click="openTimePicker">
         Время напоминания
         <span class="ms-auto">{{ reminderTime }}</span>
         <i class="bi bi-chevron-right"></i>
       </div>
+
+      <div class="btn btn-setting btn-outline-secondary text-start d-flex align-items-center justify-content-between">
+        Показывать архивные данные
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" v-model="showArchivedData" />
+        </div>
+      </div>
     </div>
 
     <!-- Модалка Bootstrap 5 -->
-    <div
-        class="modal fade"
-        id="timePickerModal"
-        tabindex="-1"
-        aria-labelledby="timePickerModalLabel"
-        aria-hidden="true"
-    >
+    <div class="modal fade" id="timePickerModal" tabindex="-1" aria-labelledby="timePickerModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="timePickerModalLabel">Выберите время</h5>
-            <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Закрыть"
-            ></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" ></button>
           </div>
           <div class="modal-body">
-            <Flatpickr
-                v-model="reminderTime"
-                :config="timeConfig"
-                class="form-control"
-            />
+            <Flatpickr v-model="reminderTime" :config="timeConfig" class="form-control" />
           </div>
           <div class="modal-footer">
             <button

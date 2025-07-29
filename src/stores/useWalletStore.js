@@ -15,10 +15,15 @@ export const useWalletStore = defineStore('wallet', {
     async fetchWallets() {
       const userStore = useUserStore()
 
+      const showArchived = userStore.settings?.show_archived_data === true
+
+      const url = `${baseURL}/wallets?_relations=wallet-types&user_id=${userStore.id}` +
+        (showArchived ? '' : '&is_archived=false');
+
       this.loading = true
       this.error = null
       try {
-        const response = await axios.get(`${baseURL}/wallets?_relations=wallet-types&user_id=${userStore.id}`, {
+        const response = await axios.get(url, {
           headers: {
             Authorization: `Bearer ${userStore.token}`
           }
@@ -32,7 +37,7 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    async addWallet({ name, typeId, balance, userId }) {
+    async addWallet({ name, typeId, balance, userId, isArchived }) {
       const userStore = useUserStore()
 
       try {
@@ -41,7 +46,8 @@ export const useWalletStore = defineStore('wallet', {
           'wallet-type_id': typeId,
           balance: balance,
           user_id: userId,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          is_archived: isArchived
         }, {
           headers: {
             Authorization: `Bearer ${userStore.token}`
@@ -119,14 +125,15 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    async editWallet(walletId, { name, typeId, balance }) {
+    async editWallet(walletId, { name, typeId, balance, isArchived }) {
       const userStore = useUserStore()
 
       try {
         await axios.patch(`${baseURL}/wallets/${walletId}`, {
           name,
           'wallet-type_id': typeId,
-          balance
+          balance,
+          'is_archived': isArchived
         }, {
           headers: {
             Authorization: `Bearer ${userStore.token}`

@@ -52,7 +52,7 @@ onMounted(() => {
 
     <div class="flex-grow-1 d-flex flex-column" v-if="!loading && !error">
       <ul v-if="wallets.length > 0" class="w-100 mb-0 ps-0" >
-        <li class="d-flex p-2 mb-3 border rounded align-items-start" v-for="item in wallets">
+        <li :class="['d-flex p-2 mb-3 border rounded align-items-start', item.is_archived ? 'bg-border-color' : '']" v-for="item in wallets">
           <i :class="['bi', 'fs-2', 'me-2', 'lh-1', 'text-primary', `bi-${item['wallet-type'].type}`]"></i>
           <div class="flex-grow-1">
             <div class="mb-1">{{ item.name }}</div>
@@ -84,5 +84,9 @@ onMounted(() => {
 .btn-outline-danger {
   font-size: 0.75rem;
   padding: 0.2rem 0.4rem;
+}
+
+.bg-border-color {
+  background-color: var(--bs-border-color);
 }
 </style>
