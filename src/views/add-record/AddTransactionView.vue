@@ -106,7 +106,7 @@ const handleSubmit = async () => {
     const amt = Number(amount.value);
 
     if (isTransfer.value) {
-      console.log(22)
+
       if (!fromWalletId.value || !toWalletId.value || fromWalletId.value === toWalletId.value) {
         alert('Выберите разные кошельки для перевода')
         return;

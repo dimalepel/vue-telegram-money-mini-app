@@ -61,7 +61,7 @@ export const useWalletStore = defineStore('wallet', {
         return
       }
 
-      const newBalance = wallet.balance + amountDelta
+      const newBalance = (wallet.balance + amountDelta).toFixed(2);
 
       try {
         await axios.patch(`${baseURL}/wallets/${walletId}`, {
@@ -71,7 +71,7 @@ export const useWalletStore = defineStore('wallet', {
             Authorization: `Bearer ${userStore.token}`
           }
         })
-        // Обновляем локальное значение, чтобы UI не ждал следующего fetch
+
         wallet.balance = newBalance
       } catch (err) {
         console.error('Ошибка при обновлении баланса кошелька', err)
