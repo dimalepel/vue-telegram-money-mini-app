@@ -121,6 +121,7 @@ const handleSubmit = async () => {
         from_wallet_id: Number(fromWalletId.value),
         to_wallet_id: Number(toWalletId.value),
         category_id: null,
+        created_at: new Date().toISOString()
       });
 
       await walletStore.updateWalletBalance(Number(fromWalletId.value), -amt);
@@ -141,6 +142,7 @@ const handleSubmit = async () => {
         user_id: userStore.id,
         wallet_id: Number(walletId.value),
         category_id: Number(categoryId.value),
+        created_at: new Date().toISOString()
       })
 
       await walletStore.updateWalletBalance(Number(walletId.value), delta)

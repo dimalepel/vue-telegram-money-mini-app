@@ -40,7 +40,8 @@ export const useWalletStore = defineStore('wallet', {
           name: name,
           'wallet-type_id': typeId,
           balance: balance,
-          user_id: userId
+          user_id: userId,
+          created_at: new Date().toISOString()
         }, {
           headers: {
             Authorization: `Bearer ${userStore.token}`
