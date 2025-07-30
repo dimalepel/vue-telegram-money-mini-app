@@ -81,6 +81,10 @@ function deleteTransaction(id) {
 function getCategoryById(id) {
   return categoryStore.categories.find(cat => cat.id === id)
 }
+
+function getWalletById(id) {
+  return walletStore.wallets.find(w => w.id === id)
+}
 </script>
 
 <template>
@@ -114,6 +118,7 @@ function getCategoryById(id) {
                   {{ item.type === TransactionTypes.TRANSFER ? `${item.amount.toFixed(2)}` : item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
                 </strong>
                 <span v-if="item.type !== TransactionTypes.TRANSFER" class="category-name"><i :style="`background-color: ${getCategoryById(item.category_id)?.color || '#cccccc'}`"></i> {{ getCategoryById(item.category_id)?.name || '—' }}</span>
+                <span v-if="item.type === TransactionTypes.TRANSFER" class="transfer-detail">{{ getWalletById(item.from_wallet_id).name }}<i class="bi bi-arrow-right-short"></i>{{ getWalletById(item.to_wallet_id).name }}</span>
               </div>
             </div>
 
@@ -152,5 +157,17 @@ function getCategoryById(id) {
   margin-right: 0.3rem;
   background-color: red;
   border-radius: 100%;
+}
+
+.transfer-detail {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #b5afaf;
+}
+
+.transfer-detail i {
+  margin-left: 0.2rem;
+  margin-right: 0.2rem;
 }
 </style>

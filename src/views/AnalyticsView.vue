@@ -12,9 +12,13 @@
     <div v-if="!loading && !walletsLoading && !error && !walletsError">
       <!-- Месяц и навигация -->
       <div v-if="availableMonths.length > 0" class="d-flex align-items-center mb-3">
-        <button class="btn btn-outline-primary me-2" @click="prevMonth" :disabled="currentIndex === 0">←</button>
+        <button class="btn btn-outline-primary me-2" @click="prevMonth" :disabled="currentIndex === 0">
+          <i class="bi bi-arrow-left"></i>
+        </button>
         <span class="flex-grow-1 text-center fw-bold">{{ currentMonthLabel }}</span>
-        <button class="btn btn-outline-primary ms-2" @click="nextMonth" :disabled="currentIndex === availableMonths.length - 1">→</button>
+        <button class="btn btn-outline-primary ms-2" @click="nextMonth" :disabled="currentIndex === availableMonths.length - 1">
+          <i class="bi bi-arrow-right"></i>
+        </button>
       </div>
 
       <!-- Фильтры -->
@@ -40,18 +44,10 @@
         <div class="mb-3 col-4">
           <label class="form-label d-block">&nbsp;</label>
           <div class="btn-group w-100">
-            <button
-                class="btn"
-                :class="selectedChartType === 'bar' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="selectedChartType = 'bar'"
-            >
+            <button class="btn" :class="selectedChartType === 'bar' ? 'btn-primary' : 'btn-outline-primary'" @click="selectedChartType = 'bar'">
               <i class="bi bi-bar-chart"></i>
             </button>
-            <button
-                class="btn"
-                :class="selectedChartType === 'doughnut' ? 'btn-primary' : 'btn-outline-primary'"
-                @click="selectedChartType = 'doughnut'"
-            >
+            <button class="btn" :class="selectedChartType === 'doughnut' ? 'btn-primary' : 'btn-outline-primary'" @click="selectedChartType = 'doughnut'">
               <i class="bi bi-pie-chart"></i>
             </button>
           </div>
@@ -85,6 +81,7 @@
                     {{ item.type === TransactionTypes.TRANSFER ? `${item.amount.toFixed(2)}` : item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
                   </strong>
                   <span v-if="item.type !== TransactionTypes.TRANSFER" class="category-name"><i :style="`background-color: ${getCategoryById(item.category_id)?.color || '#cccccc'}`"></i> {{ getCategoryById(item.category_id)?.name || '—' }}</span>
+                  <span v-if="item.type === TransactionTypes.TRANSFER" class="transfer-detail">{{ getWalletById(item.from_wallet_id).name }}<i class="bi bi-arrow-right-short"></i>{{ getWalletById(item.to_wallet_id).name }}</span>
                 </div>
               </div>
 
@@ -310,6 +307,10 @@ function deleteTransaction(id) {
     transactionStore.deleteTransaction(id)
   }
 }
+
+function getWalletById(id) {
+  return walletStore.wallets.find(w => w.id === id)
+}
 </script>
 
 <style scoped>
@@ -352,5 +353,17 @@ function deleteTransaction(id) {
   margin-right: 0.3rem;
   background-color: red;
   border-radius: 100%;
+}
+
+.transfer-detail {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #b5afaf;
+}
+
+.transfer-detail i {
+  margin-left: 0.2rem;
+  margin-right: 0.2rem;
 }
 </style>
