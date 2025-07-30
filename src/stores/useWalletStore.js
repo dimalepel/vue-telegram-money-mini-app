@@ -15,15 +15,10 @@ export const useWalletStore = defineStore('wallet', {
     async fetchWallets() {
       const userStore = useUserStore()
 
-      const showArchived = userStore.settings?.show_archived_data === true
-
-      const url = `${baseURL}/wallets?_relations=wallet-types&sortBy=-created_at&user_id=${userStore.id}` +
-        (showArchived ? '' : '&is_archived=false');
-
       this.loading = true
       this.error = null
       try {
-        const response = await axios.get(url, {
+        const response = await axios.get(`${baseURL}/wallets?_relations=wallet-types&sortBy=-created_at&user_id=${userStore.id}`, {
           headers: {
             Authorization: `Bearer ${userStore.token}`
           }

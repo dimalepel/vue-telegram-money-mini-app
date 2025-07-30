@@ -6,16 +6,13 @@ import Flatpickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
 import debounce from 'lodash.debounce'
 import {useUserStore} from "@/stores/useUserStore";
+import AlertMessage from "@/components/AlertMessage.vue";
 
 const userStore = useUserStore()
-
-// Для версии приложения
 const appVersion = __APP_VERSION__
-
-// Логика переключателя
 const remindersEnabled = ref(false)
 const reminderTime = ref('17:30')
-
+const showSavedMessage = ref(false)
 const showArchivedData = ref(false)
 
 // Flatpickr конфиг для выбора только времени
@@ -52,6 +49,11 @@ const debouncedSave = debounce(() => {
     reminders_enabled: remindersEnabled.value,
     reminder_time: reminderTime.value,
     show_archived_data: showArchivedData.value
+  }).then(() => {
+    showSavedMessage.value = true
+    setTimeout(() => {
+      showSavedMessage.value = false
+    }, 2000)
   })
 }, 1000)
 
@@ -62,7 +64,7 @@ watch(
 </script>
 
 <template>
-  <div>
+  <div class="position-relative">
     <MainHeader title="Настройки"/>
 
     <!-- Категории -->
@@ -112,11 +114,7 @@ watch(
             <Flatpickr v-model="reminderTime" :config="timeConfig" class="form-control" />
           </div>
           <div class="modal-footer">
-            <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-            >
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
               Отмена
             </button>
             <button type="button" class="btn btn-primary" @click="saveTime">
@@ -131,6 +129,8 @@ watch(
     <div class="pt-2 mt-auto text-center">
       app version {{ appVersion }}
     </div>
+
+    <AlertMessage class="position-absolute mb-0" style="bottom: 0.5rem; right: calc(var(--bs-gutter-x) * .5); left: calc(var(--bs-gutter-x) * .5);" v-if="showSavedMessage" message="Настройки сохранены" type="success" />
   </div>
 </template>
 
@@ -141,5 +141,10 @@ watch(
 
 .form-check {
   margin-bottom: 0;
+}
+
+.toast {
+  opacity: 1;
+  transition: opacity 0.5s ease;
 }
 </style>

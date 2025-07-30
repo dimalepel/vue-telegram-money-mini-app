@@ -3,6 +3,7 @@ import {onMounted, ref} from 'vue'
 import { useUserStore } from '@/stores/useUserStore'
 import SvgLoader from "@/components/SvgLoader.vue";
 import {useRouter} from "vue-router";
+import AlertMessage from "@/components/AlertMessage.vue";
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -46,9 +47,7 @@ onMounted( async () => {
 <template>
   <div class="align-items-center justify-content-center text-center">
     <SvgLoader />
-    <div v-if="showFallbackNotice" class="alert alert-warning fade show" role="alert">
-      Пользователь Telegram не найден, используется тестовый аккаунт.
-    </div>
+    <AlertMessage v-if="showFallbackNotice" message="Пользователь Telegram не найден, используется тестовый аккаунт." />
   </div>
 </template>
 

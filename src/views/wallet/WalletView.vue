@@ -1,15 +1,25 @@
 <script setup>
-import {onMounted, ref} from 'vue'
-import { useWalletStore } from '../../stores/useWalletStore'
+import {computed, onMounted, ref} from 'vue'
+import { useWalletStore } from '@/stores/useWalletStore'
 import { storeToRefs } from "pinia";
 import AlertMessage from "@/components/AlertMessage.vue";
 import MainHeader from "@/components/MainHeader.vue";
 import DeleteWalletModal from "@/components/DeleteWalletModal.vue";
 import SvgLoader from "@/components/SvgLoader.vue";
+import { useUserStore } from '@/stores/useUserStore'
 
 const walletStore = useWalletStore()
 const { wallets, loading, error } = storeToRefs(walletStore)
 const { fetchWallets } = walletStore
+
+const userStore = useUserStore()
+const showArchived = computed(() => userStore.settings?.show_archived_data === true)
+
+const visibleWallets = computed(() => {
+  return showArchived.value
+      ? wallets.value
+      : wallets.value.filter(w => !w.is_archived)
+})
 
 const showModal = ref(false)
 const selectedWalletId = ref(null)
@@ -51,8 +61,8 @@ onMounted(() => {
     <p v-if="error">{{ error }}</p>
 
     <div class="flex-grow-1 d-flex flex-column" v-if="!loading && !error">
-      <ul v-if="wallets.length > 0" class="w-100 mb-0 ps-0" >
-        <li :class="['d-flex p-2 mb-3 border rounded align-items-start', item.is_archived ? 'bg-border-color' : '']" v-for="item in wallets">
+      <ul v-if="visibleWallets.length > 0" class="w-100 mb-0 ps-0" >
+        <li :class="['d-flex p-2 mb-3 border rounded align-items-start', item.is_archived ? 'bg-border-color' : '']" v-for="item in visibleWallets">
           <i :class="['bi', 'fs-2', 'me-2', 'lh-1', 'text-primary', `bi-${item['wallet-type'].type}`]"></i>
           <div class="flex-grow-1">
             <div class="mb-1">{{ item.name }}</div>

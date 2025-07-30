@@ -27,7 +27,7 @@
           <label for="walletSelect" class="form-label">Депозит:</label>
           <select id="walletSelect" v-model="selectedWalletId" class="form-select">
             <option :value="null">Все депозиты</option>
-            <option v-for="wallet in wallets" :key="wallet.id" :value="wallet.id">
+            <option v-for="wallet in visibleWallets" :key="wallet.id" :value="wallet.id">
               {{ wallet.name }}
             </option>
           </select>
@@ -81,7 +81,7 @@
                     {{ item.type === TransactionTypes.TRANSFER ? `${item.amount.toFixed(2)}` : item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
                   </strong>
                   <span v-if="item.type !== TransactionTypes.TRANSFER" class="category-name"><i :style="`background-color: ${getCategoryById(item.category_id)?.color || '#cccccc'}`"></i> {{ getCategoryById(item.category_id)?.name || '—' }}</span>
-                  <span v-if="item.type === TransactionTypes.TRANSFER" class="transfer-detail">{{ getWalletById(item.from_wallet_id).name }}<i class="bi bi-arrow-right-short"></i>{{ getWalletById(item.to_wallet_id).name }}</span>
+                  <span v-if="item.type === TransactionTypes.TRANSFER" class="transfer-detail">{{ getWalletById(item.from_wallet_id)?.name }}<i class="bi bi-arrow-right-short"></i>{{ getWalletById(item.to_wallet_id)?.name }}</span>
                 </div>
               </div>
 
@@ -115,6 +115,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
 import {TransactionTypes} from "../constants/transactionTypes.js";
 import SvgLoader from "@/components/SvgLoader.vue";
+import {useUserStore} from "@/stores/useUserStore";
 
 const formatDate = inject('formatDate')
 
@@ -125,6 +126,15 @@ const categoryStore = useCategoryStore()
 const {transactions, loading, error} = storeToRefs(transactionStore)
 const {wallets, loading: walletsLoading, error: walletsError} = storeToRefs(walletStore)
 const {allCategories: categories} = storeToRefs(categoryStore)
+
+const userStore = useUserStore()
+const showArchived = computed(() => userStore.settings?.show_archived_data === true)
+
+const visibleWallets = computed(() => {
+  return showArchived.value
+      ? wallets.value
+      : wallets.value.filter(w => !w.is_archived)
+})
 
 const selectedMonth = ref('')
 const selectedWalletId = ref(null)
