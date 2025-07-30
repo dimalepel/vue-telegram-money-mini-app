@@ -73,7 +73,7 @@ export const useWalletStore = defineStore('wallet', {
         return
       }
 
-      const newBalance = (wallet.balance + amountDelta).toFixed(2);
+      const newBalance = (Number(wallet.balance) + Number(amountDelta)).toFixed(2);
 
       try {
         await axios.patch(`${baseURL}/wallets/${walletId}`, {
