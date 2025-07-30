@@ -15,7 +15,6 @@ const reminderTime = ref('17:30')
 const showSavedMessage = ref(false)
 const showArchivedData = ref(false)
 
-// Flatpickr конфиг для выбора только времени
 const timeConfig = {
   enableTime: true,
   noCalendar: true,
@@ -23,7 +22,13 @@ const timeConfig = {
   time_24hr: true,
 }
 
-let timeModal // Переменная для экземпляра модалки
+const initialSettings = ref({
+  reminders_enabled: false,
+  reminder_time: '17:30',
+  show_archived_data: false
+})
+
+let timeModal
 
 onMounted(() => {
   const modalElement = document.getElementById('timePickerModal')
@@ -33,11 +38,18 @@ onMounted(() => {
   remindersEnabled.value = settings.reminders_enabled ?? false
   reminderTime.value = settings.reminder_time ?? '17:30'
   showArchivedData.value = settings.show_archived_data ?? false
+
+  initialSettings.value = {
+    reminders_enabled: remindersEnabled.value,
+    reminder_time: reminderTime.value,
+    show_archived_data: showArchivedData.value
+  }
 })
 
 function openTimePicker() {
   timeModal.show()
 }
+
 
 function saveTime() {
   timeModal.hide()
@@ -45,11 +57,25 @@ function saveTime() {
 }
 
 const debouncedSave = debounce(() => {
+  const hasChanged =
+      remindersEnabled.value !== initialSettings.value.reminders_enabled ||
+      reminderTime.value !== initialSettings.value.reminder_time ||
+      showArchivedData.value !== initialSettings.value.show_archived_data
+
+  if (!hasChanged) return
+
   userStore.updateSettings({
     reminders_enabled: remindersEnabled.value,
     reminder_time: reminderTime.value,
     show_archived_data: showArchivedData.value
   }).then(() => {
+    // Обновляем initialSettings после успешного сохранения
+    initialSettings.value = {
+      reminders_enabled: remindersEnabled.value,
+      reminder_time: reminderTime.value,
+      show_archived_data: showArchivedData.value
+    }
+
     showSavedMessage.value = true
     setTimeout(() => {
       showSavedMessage.value = false
@@ -141,10 +167,5 @@ watch(
 
 .form-check {
   margin-bottom: 0;
-}
-
-.toast {
-  opacity: 1;
-  transition: opacity 0.5s ease;
 }
 </style>
