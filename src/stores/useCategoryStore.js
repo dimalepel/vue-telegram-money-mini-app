@@ -73,7 +73,10 @@ export const useCategoryStore = defineStore('category', {
         })
 
         // Добавляем в локальный список
-        this.categories.push(response.data)
+        console.log(response.data)
+        const newCategory = response.data
+        this.categories.push(newCategory)
+        return newCategory
       } catch (error) {
         this.error = error.response?.data?.message || 'Ошибка при создании категории'
         console.error('Ошибка создания категории:', error)

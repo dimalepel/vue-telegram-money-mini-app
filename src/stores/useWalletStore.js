@@ -11,6 +11,16 @@ export const useWalletStore = defineStore('wallet', {
     error: null,
     wallets: []
   }),
+  getters: {
+    visibleWallets: (state) => {
+      const userStore = useUserStore()
+      const showArchived = userStore.settings?.show_archived_data === true
+
+      return showArchived
+        ? state.wallets
+        : state.wallets.filter(w => !w.is_archived)
+    }
+  },
   actions: {
     async fetchWallets() {
       const userStore = useUserStore()

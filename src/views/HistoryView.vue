@@ -14,6 +14,7 @@ const formatDate = inject('formatDate')
 
 const {transactions, loading, error} = storeToRefs(transactionStore)
 const {wallets} = storeToRefs(walletStore)
+const { visibleWallets } = storeToRefs(walletStore)
 
 const selectedWalletId = ref('')
 const categoryStore = useCategoryStore()
@@ -95,9 +96,9 @@ function getWalletById(id) {
     <p v-if="error">{{ error }}</p>
 
     <div v-if="!loading && !error">
-      <select v-if="wallets.length > 0" v-model="selectedWalletId" class="form-select mb-3">
+      <select v-if="visibleWallets.length > 0" v-model="selectedWalletId" class="form-select mb-3">
         <option value="">Все депозиты</option>
-        <option :value="item.id" v-for="item in wallets" :key="item.id">
+        <option :value="item.id" v-for="item in visibleWallets" :key="item.id">
           {{ item.name }}
         </option>
       </select>

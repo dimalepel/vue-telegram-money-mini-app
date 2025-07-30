@@ -115,7 +115,6 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
 import {TransactionTypes} from "../constants/transactionTypes.js";
 import SvgLoader from "@/components/SvgLoader.vue";
-import {useUserStore} from "@/stores/useUserStore";
 
 const formatDate = inject('formatDate')
 
@@ -127,14 +126,7 @@ const {transactions, loading, error} = storeToRefs(transactionStore)
 const {wallets, loading: walletsLoading, error: walletsError} = storeToRefs(walletStore)
 const {allCategories: categories} = storeToRefs(categoryStore)
 
-const userStore = useUserStore()
-const showArchived = computed(() => userStore.settings?.show_archived_data === true)
-
-const visibleWallets = computed(() => {
-  return showArchived.value
-      ? wallets.value
-      : wallets.value.filter(w => !w.is_archived)
-})
+const { visibleWallets } = storeToRefs(walletStore)
 
 const selectedMonth = ref('')
 const selectedWalletId = ref(null)

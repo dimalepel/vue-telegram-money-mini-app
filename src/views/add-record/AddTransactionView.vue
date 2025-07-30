@@ -78,17 +78,28 @@ const modalRef = ref(null)
 let modalInstance = null
 
 const newCategoryName = ref('')
+const newCategoryColor = ref('')
 
 function openAddModal() {
   newCategoryName.value = ''
+  newCategoryColor.value = ''
+
   if (modalInstance) {
     modalInstance.show()
   }
 }
 
-async function onSaveCategory(name) {
-  await categoryStore.createCategory(name, isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE)
-  modalInstance.hide()
+async function onSaveCategory(category) {
+  const created = await categoryStore.createCategory(
+      category.name,
+      isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
+      category.color
+  )
+
+  if (created && created.id) {
+    categoryId.value = created.id
+    modalInstance.hide()
+  }
 }
 
 const handleSubmit = async () => {
@@ -232,10 +243,7 @@ const handleSubmit = async () => {
     </form>
 
     <!-- Модальное окно -->
-    <AddCategoryModal
-        ref="modalRef"
-        @save="onSaveCategory"
-    />
+    <AddCategoryModal ref="modalRef" @save="onSaveCategory" />
 
   </div>
 </template>

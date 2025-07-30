@@ -90,10 +90,7 @@ async function onSaveCategory(category) {
     </button>
 
     <!-- Модальное окно -->
-    <AddCategoryModal
-        ref="modalRef"
-        @save="onSaveCategory"
-    />
+    <AddCategoryModal ref="modalRef" @save="onSaveCategory" />
 
   </div>
 </template>
