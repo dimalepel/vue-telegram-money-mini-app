@@ -3,7 +3,7 @@
     <MainHeader title="Аналитика"/>
 
     <div class="d-flex align-items-center justify-content-center flex-grow-1" v-if="loading || walletsLoading">
-      <SvgLoader />
+      <SvgLoader/>
     </div>
 
     <p v-if="error">{{ error }}</p>
@@ -24,6 +24,20 @@
       <!-- Фильтры -->
       <div class="row">
         <div class="mb-3 col-12">
+          <div class="btn-group w-100 mb-3">
+            <button class="btn" :class="selectedDataset === TransactionTypes.EXPENDITURE ? 'btn-primary' : 'btn-outline-primary'" @click="selectedDataset = TransactionTypes.EXPENDITURE">
+              Расходы
+            </button>
+            <button class="btn" :class="selectedDataset === TransactionTypes.INCOME ? 'btn-primary' : 'btn-outline-primary'" @click="selectedDataset = TransactionTypes.INCOME">
+              Доходы
+            </button>
+            <button class="btn" :class="selectedDataset === 'all' ? 'btn-primary' : 'btn-outline-primary'" @click="selectedDataset = 'all'">
+              Транзакции
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3" :class="selectedDataset === 'all' ? 'col-12' : 'col-8'">
           <label for="walletSelect" class="form-label">Депозит:</label>
           <select id="walletSelect" v-model="selectedWalletId" class="form-select">
             <option :value="null">Все депозиты</option>
@@ -33,15 +47,7 @@
           </select>
         </div>
 
-        <div class="mb-3 col-8">
-          <label for="datasetSelect" class="form-label">Тип операций:</label>
-          <select id="datasetSelect" v-model="selectedDataset" class="form-select">
-            <option value="income">Доходы</option>
-            <option value="expense">Расходы</option>
-          </select>
-        </div>
-
-        <div class="mb-3 col-4">
+        <div class="mb-3 col-4" v-if="selectedDataset === TransactionTypes.INCOME || selectedDataset === TransactionTypes.EXPENDITURE">
           <label class="form-label d-block">&nbsp;</label>
           <div class="btn-group w-100">
             <button class="btn" :class="selectedChartType === 'bar' ? 'btn-primary' : 'btn-outline-primary'" @click="selectedChartType = 'bar'">
@@ -59,8 +65,8 @@
 
         <div class="wrapper">
           <template v-if="selectedMonth">
-            <BarChart v-if="selectedChartType === 'bar'" :data="chartData" :options="chartOptions"/>
-            <DoughnutChart v-else :transactions="filteredTransactions" :selectedDataset="selectedDataset" :categories="categories"/>
+            <BarChart v-if="selectedChartType === 'bar' && selectedDataset !== 'all'" :data="chartData" :options="chartOptions"/>
+            <DoughnutChart v-else-if="selectedChartType === 'doughnut' && selectedDataset !== 'all'" :transactions="filteredTransactionsByType" :selectedDataset="selectedDataset" :categories="categories"/>
           </template>
           <AlertMessage v-else message="У Вас нет данных для аналитики"/>
         </div>
@@ -126,11 +132,11 @@ const {transactions, loading, error} = storeToRefs(transactionStore)
 const {wallets, loading: walletsLoading, error: walletsError} = storeToRefs(walletStore)
 const {allCategories: categories} = storeToRefs(categoryStore)
 
-const { visibleWallets } = storeToRefs(walletStore)
+const {visibleWallets} = storeToRefs(walletStore)
 
 const selectedMonth = ref('')
 const selectedWalletId = ref(null)
-const selectedDataset = ref('income')
+const selectedDataset = ref(TransactionTypes.EXPENDITURE)
 const selectedChartType = ref('bar')
 const currentIndex = ref(0)
 
@@ -207,20 +213,23 @@ const dailyData = computed(() => {
   return result
 })
 
-const chartData = computed(() => ({
-  labels: dailyData.value.map(d =>
-      dayjs(`${selectedMonth.value}-${d.day}`).format('D dd')
-  ),
-  datasets: [
-    {
-      label: selectedDataset.value === 'income' ? 'Доходы' : 'Расходы',
-      backgroundColor: selectedDataset.value === 'income' ? '#4caf50' : '#f44336',
-      data: dailyData.value.map(d =>
-          selectedDataset.value === 'income' ? d.amount : -d.amount
-      )
-    }
-  ]
-}))
+const chartData = computed(() => {
+  if (selectedDataset.value === 'all') return null
+  return {
+    labels: dailyData.value.map(d =>
+        dayjs(`${selectedMonth.value}-${d.day}`).format('D dd')
+    ),
+    datasets: [
+      {
+        label: selectedDataset.value === TransactionTypes.INCOME ? 'Доходы' : 'Расходы',
+        backgroundColor: selectedDataset.value === TransactionTypes.INCOME ? '#4caf50' : '#f44336',
+        data: dailyData.value.map(d =>
+            selectedDataset.value === TransactionTypes.INCOME ? d.amount : -d.amount
+        )
+      }
+    ]
+  }
+})
 
 const isMobile = window.innerWidth <= 768
 
@@ -235,7 +244,28 @@ const chartOptions = {
       font: {size: 18, family: 'Arial', weight: 'bold'},
       padding: {top: 10, bottom: 30}
     },
-    legend: {display: false}
+    legend: {display: false},
+    tooltip: {
+      displayColors: false,
+      callbacks: {
+        title: (tooltipItems) => {
+          const item = tooltipItems[0]
+          const day = item.raw?.day || item.label.split(' ')[0].padStart(2, '0')
+          const fullDate = dayjs(`${selectedMonth.value}-${day}`).format('DD.MM.YY')
+          return fullDate // например: "21 июля 2025"
+        },
+        label: function(context) {
+          let label = context.dataset.label || '';
+          let value = context.parsed.y;
+
+          if (typeof value === 'number') {
+            value = value.toFixed(2); // округление
+          }
+
+          return `${value} BYN`;
+        }
+      }
+    }
   },
   scales: {
     x: {
@@ -252,13 +282,25 @@ const chartOptions = {
   }
 }
 
-const filteredTransactionsByType = computed(() =>
-    filteredTransactions.value.filter(tx =>
-        selectedDataset.value === 'income'
-            ? tx.amount > 0
-            : tx.amount < 0
-    )
-)
+const filteredTransactionsByType = computed(() => {
+  if (selectedDataset.value === 'all') {
+    return filteredTransactions.value
+  }
+
+  return filteredTransactions.value.filter(tx => {
+    if (tx.type === TransactionTypes.TRANSFER) return false
+
+    if (selectedDataset.value === TransactionTypes.INCOME) {
+      return tx.type === TransactionTypes.INCOME
+    }
+
+    if (selectedDataset.value === TransactionTypes.EXPENDITURE) {
+      return tx.type === TransactionTypes.EXPENDITURE
+    }
+
+    return false
+  })
+})
 
 const groupedAnalyticsHistory = computed(() => {
   const groups = {}

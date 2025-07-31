@@ -6,9 +6,6 @@
     <router-link class="btn btn-light" to="/wallet">
       <i class="bi bi-wallet2"></i>
     </router-link>
-    <router-link class="btn btn-light" to="/history">
-      <i class="bi bi-clock-history"></i>
-    </router-link>
     <router-link class="btn btn-light" to="/analytics">
       <i class="bi bi-graph-up"></i>
     </router-link>

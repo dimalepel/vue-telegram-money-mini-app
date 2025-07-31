@@ -42,7 +42,7 @@ const routes = [
       { path: 'edit/:walletId', component: AddWallet }
     ]
   },
-  { path: '/history', component: HistoryView },
+  //{ path: '/history', component: HistoryView },
   {
     path: '/settings',
     component: SettingsLayout,

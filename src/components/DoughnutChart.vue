@@ -51,11 +51,8 @@ const datasetTypeMap = {
 const chartData = computed(() => {
   const categorySums = {}
   const categoryColors = {}
-  const selectedType = datasetTypeMap[props.selectedDataset]
 
   for (const tx of props.transactions) {
-    if (tx.type !== selectedType) continue
-
     const category = getCategoryById(tx.category_id)
     if (!category) continue
 
@@ -86,12 +83,14 @@ const chartOptions = {
   responsive: true,
   plugins: {
     tooltip: {
+      displayColors: false,
       callbacks: {
+        title: () => '',
         label: function (context) {
           const total = context.dataset.data.reduce((a, b) => a + b, 0)
           const value = context.raw
           const percentage = ((value / total) * 100).toFixed(1)
-          return `${context.label}: ${value.toFixed(2)} (${percentage}%)`
+          return `${context.label}: ${value.toFixed(2)} BYN (${percentage}%)`
         }
       }
     },

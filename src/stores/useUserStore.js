@@ -121,8 +121,7 @@ export const useUserStore = defineStore('user', {
           }
         })
 
-        this.settings = response.data.settings
-        console.log('Настройки успешно обновлены:', this.settings)
+        this.settings = response.data.settings;
       } catch (err) {
         console.error('Ошибка при обновлении настроек:', err.response?.status, err.response?.data)
       }
