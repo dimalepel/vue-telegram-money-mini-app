@@ -1,19 +1,33 @@
 <script setup>
-import {ref, onMounted, watch} from 'vue'
+import {ref, onMounted, watch, computed} from 'vue'
 import { Modal } from 'bootstrap' // ✅ Правильный импорт!
 import MainHeader from "@/components/MainHeader.vue"
 import Flatpickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
 import debounce from 'lodash.debounce'
 import {useUserStore} from "@/stores/useUserStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import AlertMessage from "@/components/AlertMessage.vue";
 
 const userStore = useUserStore()
+const settingsStore = useSettingsStore()
 const appVersion = __APP_VERSION__
-const remindersEnabled = ref(false)
-const reminderTime = ref('17:30')
 const showSavedMessage = ref(false)
-const showArchivedData = ref(false)
+
+const remindersEnabled = computed({
+  get: () => settingsStore.reminders_enabled,
+  set: val => settingsStore.reminders_enabled = val
+})
+
+const reminderTime = computed({
+  get: () => settingsStore.reminder_time,
+  set: val => settingsStore.reminder_time = val
+})
+
+const showArchivedData = computed({
+  get: () => settingsStore.show_archived_data,
+  set: val => settingsStore.show_archived_data = val
+})
 
 const timeConfig = {
   enableTime: true,
@@ -30,19 +44,16 @@ const initialSettings = ref({
 
 let timeModal
 
-onMounted(() => {
+onMounted(async () => {
   const modalElement = document.getElementById('timePickerModal')
   timeModal = new Modal(modalElement)
 
-  const settings = userStore.settings || {}
-  remindersEnabled.value = settings.reminders_enabled ?? false
-  reminderTime.value = settings.reminder_time ?? '17:30'
-  showArchivedData.value = settings.show_archived_data ?? false
+  await settingsStore.loadSettings()
 
   initialSettings.value = {
-    reminders_enabled: remindersEnabled.value,
-    reminder_time: reminderTime.value,
-    show_archived_data: showArchivedData.value
+    reminders_enabled: settingsStore.reminders_enabled,
+    reminder_time: settingsStore.reminder_time,
+    show_archived_data: settingsStore.show_archived_data
   }
 })
 
@@ -58,22 +69,21 @@ function saveTime() {
 
 const debouncedSave = debounce(() => {
   const hasChanged =
-      remindersEnabled.value !== initialSettings.value.reminders_enabled ||
-      reminderTime.value !== initialSettings.value.reminder_time ||
-      showArchivedData.value !== initialSettings.value.show_archived_data
+      settingsStore.reminders_enabled !== initialSettings.value.reminders_enabled ||
+      settingsStore.reminder_time !== initialSettings.value.reminder_time ||
+      settingsStore.show_archived_data !== initialSettings.value.show_archived_data
 
   if (!hasChanged) return
 
-  userStore.updateSettings({
-    reminders_enabled: remindersEnabled.value,
-    reminder_time: reminderTime.value,
-    show_archived_data: showArchivedData.value
+  settingsStore.updateSettings({
+    reminders_enabled: settingsStore.reminders_enabled,
+    reminder_time: settingsStore.reminder_time,
+    show_archived_data: settingsStore.show_archived_data
   }).then(() => {
-    // Обновляем initialSettings после успешного сохранения
     initialSettings.value = {
-      reminders_enabled: remindersEnabled.value,
-      reminder_time: reminderTime.value,
-      show_archived_data: showArchivedData.value
+      reminders_enabled: settingsStore.reminders_enabled,
+      reminder_time: settingsStore.reminder_time,
+      show_archived_data: settingsStore.show_archived_data
     }
 
     showSavedMessage.value = true

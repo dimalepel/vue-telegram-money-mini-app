@@ -12,10 +12,7 @@ export const useUserStore = defineStore('user', {
     status: '',
     email: '',
     isAuthenticated: false,
-    token: '',
-    settings: {
-      show_archived_data: false,
-    }
+    token: ''
   }),
 
   actions: {
@@ -31,26 +28,6 @@ export const useUserStore = defineStore('user', {
         console.error('tgUser отсутствует или не содержит id');
         return;
       }
-      // try {
-      //   // 1. Пытаемся найти пользователя
-      //   const { data } = await axios.get(`https://fcd1d63245775e7f.mokky.dev/users?telegram_id=${tgUser.id}`)
-      //
-      //   if (Array.isArray(data) && data.length > 0) {
-      //     // Пользователь найден
-      //     this._setUser(data[0])
-      //   } else {
-      //     // 2. Не найден — создаём нового
-      //     const createRes = await axios.post('https://fcd1d63245775e7f.mokky.dev/users', {
-      //       telegram_id: tgUser.id,
-      //       first_name: tgUser.first_name,
-      //       username: tgUser.username || '',
-      //     })
-      //
-      //     this._setUser(createRes.data)
-      //   }
-      // } catch (err) {
-      //   console.error('Ошибка при получении или создании пользователя:', err)
-      // }
 
       try {
         const res = await axios.post(`${baseURL}/auth`, {
@@ -78,10 +55,7 @@ export const useUserStore = defineStore('user', {
             fullName: tgUser.first_name,
             telegram_id: tgUser.id,
             email: `${tgUser.id}_mymoney@app.com`,
-            password: `${tgUser.id}`,
-            settings: {
-              show_archived_data: false
-            }
+            password: `${tgUser.id}`
           }, {
             headers: {
               Accept: "application/json",
@@ -105,28 +79,6 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async updateSettings(newSettings) {
-      if (!this.id || !this.token) {
-        console.warn('Нельзя обновить настройки — пользователь не авторизован')
-        return
-      }
-
-      try {
-        const response = await axios.patch(`${baseURL}/users/${this.id}`, {
-          settings: newSettings
-        }, {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            "Content-Type": "application/json"
-          }
-        })
-
-        this.settings = response.data.settings;
-      } catch (err) {
-        console.error('Ошибка при обновлении настроек:', err.response?.status, err.response?.data)
-      }
-    },
-
     _setUser(data) {
       this.id = data.id
       this.telegramId = data.telegram_id
@@ -136,7 +88,6 @@ export const useUserStore = defineStore('user', {
       this.email = data.email || ''
       this.isAuthenticated = true
       this.token = data.token
-      this.settings = data.settings || { show_archived_data: false }
     },
 
     logout() {
