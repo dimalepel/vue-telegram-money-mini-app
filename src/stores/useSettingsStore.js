@@ -81,9 +81,7 @@ export const useSettingsStore = defineStore('settings', {
       }
 
       try {
-        const response = await axios.patch(`${settingsURL}/settings/${userId}`, {
-          settings: newSettings
-        }, {
+        const response = await axios.patch(`${settingsURL}/settings/${userId}`, newSettings, {
           headers: {
             'x-api-token': settingsToken,
             "Content-Type": "application/json"
