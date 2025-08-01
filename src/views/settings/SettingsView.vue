@@ -8,6 +8,21 @@ import debounce from 'lodash.debounce'
 import {useUserStore} from "@/stores/useUserStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import AlertMessage from "@/components/AlertMessage.vue";
+import { DateTime } from 'luxon'
+
+function convertUtcToLocalTime(utcTime, timezone) {
+  if (!utcTime) return ''
+  const dtUtc = DateTime.fromFormat(utcTime, 'HH:mm', { zone: 'utc' })
+  const dtLocal = dtUtc.setZone(timezone)
+  return dtLocal.toFormat('HH:mm')
+}
+
+function convertLocalToUtc(localTime, timezone) {
+  if (!localTime) return ''
+  const dtLocal = DateTime.fromFormat(localTime, 'HH:mm', { zone: timezone })
+  const dtUtc = dtLocal.setZone('utc')
+  return dtUtc.toFormat('HH:mm')
+}
 
 const userStore = useUserStore()
 const settingsStore = useSettingsStore()
@@ -20,9 +35,14 @@ const remindersEnabled = computed({
 })
 
 const reminderTime = computed({
-  get: () => settingsStore.reminder_time,
-  set: val => settingsStore.reminder_time = val
+  get() {
+    return convertUtcToLocalTime(settingsStore.reminder_time, settingsStore.timezone || 'UTC')
+  },
+  set(val) {
+    settingsStore.reminder_time = convertLocalToUtc(val, settingsStore.timezone || 'UTC')
+  }
 })
+
 
 const showArchivedData = computed({
   get: () => settingsStore.show_archived_data,
@@ -34,11 +54,12 @@ const timeConfig = {
   noCalendar: true,
   dateFormat: 'H:i',
   time_24hr: true,
+  minuteIncrement: 1,
 }
 
 const initialSettings = ref({
   reminders_enabled: false,
-  reminder_time: '17:30',
+  reminder_time: '',
   show_archived_data: false
 })
 

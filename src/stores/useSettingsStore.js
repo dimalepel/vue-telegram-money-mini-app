@@ -5,11 +5,14 @@ import {useUserStore} from "@/stores/useUserStore";
 const settingsURL = import.meta.env.VITE_SETTINGS_API_URL
 const settingsToken = import.meta.env.VITE_SETTINGS_API_TOKEN
 
+const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
     reminders_enabled: false,
-    reminder_time: '17:30',
+    reminder_time: '',
     show_archived_data: false,
+    timezone: 'UTC'
   }),
 
   actions: {
@@ -32,8 +35,9 @@ export const useSettingsStore = defineStore('settings', {
         })
 
         this.reminders_enabled = data.reminders_enabled ?? false
-        this.reminder_time = data.reminder_time ?? '17:30'
+        this.reminder_time = data.reminder_time ?? ''
         this.show_archived_data = data.show_archived_data ?? false
+        this.timezone = data.timezone ?? 'UTC'
 
       } catch (err) {
         const status = err.response?.status
@@ -47,8 +51,9 @@ export const useSettingsStore = defineStore('settings', {
               user_id: userId,
               user_name: telegramId,
               reminders_enabled: false,
-              reminder_time: '17:30',
-              show_archived_data: false
+              reminder_time: '',
+              show_archived_data: false,
+              timezone
             }, {
               headers: {
                 'x-api-token': settingsToken
@@ -57,8 +62,9 @@ export const useSettingsStore = defineStore('settings', {
 
             // Устанавливаем локальные значения
             this.reminders_enabled = false
-            this.reminder_time = '17:30'
+            this.reminder_time = ''
             this.show_archived_data = false
+            this.timezone = 'UTC'
 
             console.log(`Настройки созданы для пользователя ${userId}`)
           } catch (createErr) {
@@ -81,7 +87,10 @@ export const useSettingsStore = defineStore('settings', {
       }
 
       try {
-        const response = await axios.patch(`${settingsURL}/settings/${userId}`, newSettings, {
+        const response = await axios.patch(`${settingsURL}/settings/${userId}`, {
+          ...newSettings,
+          timezone
+        }, {
           headers: {
             'x-api-token': settingsToken,
             "Content-Type": "application/json"
@@ -91,8 +100,9 @@ export const useSettingsStore = defineStore('settings', {
         this.show_archived_data = response.data.settings?.show_archived_data ?? false
 
         this.reminders_enabled = response.data?.reminders_enabled ?? false
-        this.reminder_time = response.data?.reminder_time ?? '17:30'
+        this.reminder_time = response.data?.reminder_time ?? ''
         this.show_archived_data = response.data?.show_archived_data ?? false
+        this.timezone = response.data?.timezone ?? 'UTC'
       } catch (err) {
         console.error('Ошибка при обновлении настроек:', err.response?.status, err.response?.data)
       }
