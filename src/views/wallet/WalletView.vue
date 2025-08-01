@@ -6,14 +6,15 @@ import AlertMessage from "@/components/AlertMessage.vue";
 import MainHeader from "@/components/MainHeader.vue";
 import DeleteWalletModal from "@/components/DeleteWalletModal.vue";
 import SvgLoader from "@/components/SvgLoader.vue";
-import { useUserStore } from '@/stores/useUserStore'
+import { useSettingsStore } from "@/stores/useSettingsStore";
 
 const walletStore = useWalletStore()
+const settingsStore = useSettingsStore()
+
 const { wallets, loading, error } = storeToRefs(walletStore)
 const { fetchWallets } = walletStore
 
-const userStore = useUserStore()
-const showArchived = computed(() => userStore.settings?.show_archived_data === true)
+const showArchived = computed(() => settingsStore.show_archived_data === true)
 
 const visibleWallets = computed(() => {
   return showArchived.value

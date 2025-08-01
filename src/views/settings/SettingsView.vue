@@ -137,11 +137,9 @@ watch(
 
     <!-- Переключатель -->
     <div class="btn-group-vertical">
-      <div class="btn btn-setting btn-outline-secondary text-start d-flex align-items-center justify-content-between">
-        Напоминания
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" v-model="remindersEnabled" />
-        </div>
+      <div class="form-check form-switch btn btn-setting btn-outline-secondary text-start d-flex align-items-center justify-content-between">
+        <label class="form-check-label flex-grow-1 text-start" for="toggle-notification">Напоминания</label>
+        <input class="form-check-input" type="checkbox" id="toggle-notification" v-model="remindersEnabled" />
       </div>
 
       <!-- Кнопка для открытия модалки -->
@@ -151,11 +149,9 @@ watch(
         <i class="bi bi-chevron-right"></i>
       </div>
 
-      <div class="btn btn-setting btn-outline-secondary text-start d-flex align-items-center justify-content-between">
-        Показывать архивные данные
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" v-model="showArchivedData" />
-        </div>
+      <div class="form-check form-switch btn btn-setting btn-outline-secondary text-start d-flex align-items-center justify-content-between">
+        <label class="form-check-label flex-grow-1 text-start" for="toggle-archived">Показывать архивные данные</label>
+        <input class="form-check-input" type="checkbox" id="toggle-archived" v-model="showArchivedData" />
       </div>
     </div>
 

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 
 import { useUserStore } from './useUserStore'
+import { useSettingsStore } from "./useSettingsStore";
 
 const baseURL = import.meta.env.VITE_API_URL
 
@@ -13,8 +14,8 @@ export const useWalletStore = defineStore('wallet', {
   }),
   getters: {
     visibleWallets: (state) => {
-      const userStore = useUserStore()
-      const showArchived = userStore.settings?.show_archived_data === true
+      const settingsStore = useSettingsStore()
+      const showArchived = settingsStore.show_archived_data === true
 
       return showArchived
         ? state.wallets
