@@ -9,7 +9,7 @@
     <p v-if="error">{{ error }}</p>
     <p v-if="walletsError">{{ walletsError }}</p>
 
-    <div v-if="!loading && !walletsLoading && !error && !walletsError">
+    <div class="d-flex flex-grow-1 flex-column" v-if="!loading && !walletsLoading && !error && !walletsError">
       <!-- Месяц и навигация -->
       <div v-if="availableMonths.length > 0" class="d-flex align-items-center mb-3">
         <button class="btn btn-outline-primary me-2" @click="prevMonth" :disabled="currentIndex === 0">
@@ -100,7 +100,11 @@
 
       </div>
 
-      <AlertMessage v-else message="Нет операций в этом месяце"/>
+      <div v-else class="d-flex flex-column flex-grow-1">
+        <AlertMessage  message="Нет операций в этом месяце"/>
+
+        <button @click="goTo(selectedDataset)" v-if="selectedDataset === TransactionTypes.EXPENDITURE || selectedDataset === TransactionTypes.INCOME" class="btn btn-primary w-100 mt-auto">Добавить транзакцию</button>
+      </div>
     </div>
   </div>
 </template>
@@ -111,6 +115,7 @@ import {useTransactionStore} from '@/stores/useTransactionStore'
 import {useWalletStore} from '@/stores/useWalletStore'
 import {useCategoryStore} from '@/stores/useCategoryStore'
 import {storeToRefs} from 'pinia'
+import { useRouter } from 'vue-router'
 
 import BarChart from '@/components/BarChart.vue'
 import DoughnutChart from '@/components/DoughnutChart.vue'
@@ -119,14 +124,18 @@ import MainHeader from '@/components/MainHeader.vue'
 
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import {TransactionTypes} from "../constants/transactionTypes.js";
 import SvgLoader from "@/components/SvgLoader.vue";
+
+dayjs.extend(isSameOrBefore)
 
 const formatDate = inject('formatDate')
 
 const transactionStore = useTransactionStore()
 const walletStore = useWalletStore()
 const categoryStore = useCategoryStore()
+const router = useRouter()
 
 const {transactions, loading, error} = storeToRefs(transactionStore)
 const {wallets, loading: walletsLoading, error: walletsError} = storeToRefs(walletStore)
@@ -147,23 +156,62 @@ onMounted(async () => {
     walletStore.fetchWallets()
   ])
 
-  if (availableMonths.value.length > 0) {
+  const thisMonth = dayjs().format('YYYY-MM')
+  const thisMonthIndex = availableMonths.value.findIndex(m => m.value === thisMonth)
+
+  if (thisMonthIndex !== -1) {
+    currentIndex.value = thisMonthIndex
+    selectedMonth.value = thisMonth
+  } else if (availableMonths.value.length > 0) {
     currentIndex.value = availableMonths.value.length - 1
     selectedMonth.value = availableMonths.value[currentIndex.value].value
+  } else {
+    // Нет данных совсем — но можно установить текущий месяц вручную
+    selectedMonth.value = thisMonth
   }
 })
 
 const availableMonths = computed(() => {
-  const months = transactions.value
+  if (transactions.value.length === 0) {
+    // Нет транзакций — показываем только текущий месяц
+    const thisMonth = dayjs().format('YYYY-MM')
+    return [{
+      value: thisMonth,
+      label: dayjs(thisMonth).locale('ru').format('MMMM YYYY').replace(/^./, c => c.toUpperCase())
+    }]
+  }
+
+  const dates = transactions.value
       .map(tx => tx.date?.slice(0, 7))
       .filter(Boolean)
+      .sort()
 
-  const unique = [...new Set(months)].sort()
-  return unique.map(m => ({
-    value: m,
-    label: dayjs(m).locale('ru').format('MMMM YYYY').replace(/^./, c => c.toUpperCase())
-  }))
+  const firstMonth = dayjs(dates[0])
+  const lastTransactionMonth = dayjs(dates[dates.length - 1])
+  const thisMonth = dayjs().startOf('month')
+
+  const finalMonth = thisMonth.isAfter(lastTransactionMonth) ? thisMonth : lastTransactionMonth
+
+  const months = []
+  let current = firstMonth.clone()
+
+  while (current.isSameOrBefore(finalMonth)) {
+    const value = current.format('YYYY-MM')
+    const label = current.locale('ru').format('MMMM YYYY').replace(/^./, c => c.toUpperCase())
+    months.push({ value, label })
+    current = current.add(1, 'month')
+  }
+
+  return months
 })
+
+function goTo(type) {
+  router.push({
+    name: 'AddTransaction',
+    params: { type },
+    query: { amount: 0 }
+  })
+}
 
 const currentMonthLabel = computed(() => availableMonths.value[currentIndex.value]?.label || '')
 

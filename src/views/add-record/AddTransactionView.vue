@@ -159,7 +159,7 @@ const handleSubmit = async () => {
       await walletStore.updateWalletBalance(Number(walletId.value), delta)
     }
 
-    router.push('/history');
+    router.push('/analytics');
   } catch (e) {
     console.error('Ошибка при добавлении операции:', e)
     alert('Не удалось сохранить операцию. Попробуйте снова.')
