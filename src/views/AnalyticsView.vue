@@ -71,8 +71,25 @@
           <AlertMessage v-else message="У Вас нет данных для аналитики"/>
         </div>
 
+        <!-- Денежный поток -->
+        <div v-if="selectedDataset !== 'all'">
+          <div class="fw-bold text-primary mt-4 mb-2">Денежный поток:</div>
+          <ul class="btn-group-vertical mb-2 w-100 ps-0  mb-0">
+            <li class="d-flex justify-content-between btn btn-outline-secondary">
+              <strong><i class="text-success bi bi-arrow-down-circle-fill"></i> Доход:</strong> ХХ BYN
+            </li>
+            <li class="d-flex justify-content-between btn btn-outline-secondary">
+              <strong><i class="text-danger bi bi-arrow-up-circle-fill"></i> Расход:</strong> ХХ BYN
+            </li>
+            <li class="d-flex justify-content-between btn btn-outline-secondary">
+              <strong>Баланс:</strong> ХХ BYN
+            </li>
+          </ul>
+        </div>
+
+
         <!-- История операций -->
-        <ul class="w-100 ps-0 mt-4">
+        <ul class="w-100 ps-0 mt-2">
           <template v-for="[dateLabel, items] in groupedAnalyticsHistory" :key="dateLabel">
             <li class="fw-bold text-primary py-2">{{ dateLabel }}</li>
             <li v-for="item in items" :key="item.id" class="d-flex align-items-start py-2 border-bottom transaction-card">
@@ -97,6 +114,8 @@
             </li>
           </template>
         </ul>
+
+
 
       </div>
 
