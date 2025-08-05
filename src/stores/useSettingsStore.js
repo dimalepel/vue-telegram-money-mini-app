@@ -9,10 +9,14 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
-    reminders_enabled: false,
-    reminder_time: '',
-    show_archived_data: false,
-    timezone: 'UTC'
+    settings: {
+      reminders_enabled: false,
+      reminder_time: '',
+      show_archived_data: false,
+      timezone: 'UTC',
+    },
+    loading: false,
+    error: null,
   }),
 
   actions: {
@@ -34,10 +38,12 @@ export const useSettingsStore = defineStore('settings', {
           }
         })
 
-        this.reminders_enabled = data.reminders_enabled ?? false
-        this.reminder_time = data.reminder_time ?? ''
-        this.show_archived_data = data.show_archived_data ?? false
-        this.timezone = data.timezone ?? 'UTC'
+        this.settings.reminders_enabled = data.reminders_enabled ?? false
+        this.settings.reminder_time = data.reminder_time ?? ''
+        this.settings.show_archived_data = data.show_archived_data ?? false
+        this.settings.timezone = data.timezone ?? 'UTC'
+
+        this.error = null;
 
       } catch (err) {
         const status = err.response?.status
@@ -61,17 +67,18 @@ export const useSettingsStore = defineStore('settings', {
             })
 
             // Устанавливаем локальные значения
-            this.reminders_enabled = false
-            this.reminder_time = ''
-            this.show_archived_data = false
-            this.timezone = 'UTC'
+            this.settings.reminders_enabled = false
+            this.settings.reminder_time = ''
+            this.settings.show_archived_data = false
+            this.settings.timezone = 'UTC'
 
             console.log(`Настройки созданы для пользователя ${userId}`)
           } catch (createErr) {
-            console.error('Ошибка при создании настроек:', createErr.response?.status, createErr.response?.data)
+            console.error('Ошибка при создании настроек:', createErr.response?.status, createErr.response?.data);
           }
         } else {
-          console.error('Ошибка при загрузке настроек:', status, err.response?.data)
+          console.error('Ошибка при загрузке настроек:', status, err.response?.data);
+          this.error = 'Ошибка при загрузке настроек.';
         }
       }
     },
@@ -97,12 +104,10 @@ export const useSettingsStore = defineStore('settings', {
           }
         })
 
-        this.show_archived_data = response.data.settings?.show_archived_data ?? false
-
-        this.reminders_enabled = response.data?.reminders_enabled ?? false
-        this.reminder_time = response.data?.reminder_time ?? ''
-        this.show_archived_data = response.data?.show_archived_data ?? false
-        this.timezone = response.data?.timezone ?? 'UTC'
+        this.settings.reminders_enabled = response.data?.reminders_enabled ?? false
+        this.settings.reminder_time = response.data?.reminder_time ?? ''
+        this.settings.show_archived_data = response.data?.show_archived_data ?? false
+        this.settings.timezone = response.data?.timezone ?? 'UTC'
       } catch (err) {
         console.error('Ошибка при обновлении настроек:', err.response?.status, err.response?.data)
       }

@@ -14,7 +14,7 @@ const settingsStore = useSettingsStore()
 const { wallets, loading, error } = storeToRefs(walletStore)
 const { fetchWallets } = walletStore
 
-const showArchived = computed(() => settingsStore.show_archived_data === true)
+const showArchived = computed(() => settingsStore.settings.show_archived_data === true)
 
 const visibleWallets = computed(() => {
   return showArchived.value

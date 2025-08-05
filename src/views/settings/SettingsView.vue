@@ -9,6 +9,7 @@ import {useUserStore} from "@/stores/useUserStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import AlertMessage from "@/components/AlertMessage.vue";
 import { DateTime } from 'luxon'
+import {storeToRefs} from "pinia";
 
 function convertUtcToLocalTime(utcTime, timezone) {
   if (!utcTime) return ''
@@ -24,29 +25,29 @@ function convertLocalToUtc(localTime, timezone) {
   return dtUtc.toFormat('HH:mm')
 }
 
-const userStore = useUserStore()
 const settingsStore = useSettingsStore()
 const appVersion = __APP_VERSION__
 const showSavedMessage = ref(false)
+const { error } = storeToRefs(settingsStore)
 
 const remindersEnabled = computed({
-  get: () => settingsStore.reminders_enabled,
-  set: val => settingsStore.reminders_enabled = val
+  get: () => settingsStore.settings.reminders_enabled,
+  set: val => settingsStore.settings.reminders_enabled = val
 })
 
 const reminderTime = computed({
   get() {
-    return convertUtcToLocalTime(settingsStore.reminder_time, settingsStore.timezone || 'UTC')
+    return convertUtcToLocalTime(settingsStore.settings.reminder_time, settingsStore.settings.timezone || 'UTC')
   },
   set(val) {
-    settingsStore.reminder_time = convertLocalToUtc(val, settingsStore.timezone || 'UTC')
+    settingsStore.settings.reminder_time = convertLocalToUtc(val, settingsStore.settings.timezone || 'UTC')
   }
 })
 
 
 const showArchivedData = computed({
-  get: () => settingsStore.show_archived_data,
-  set: val => settingsStore.show_archived_data = val
+  get: () => settingsStore.settings.show_archived_data,
+  set: val => settingsStore.settings.show_archived_data = val
 })
 
 const timeConfig = {
@@ -72,9 +73,9 @@ onMounted(async () => {
   await settingsStore.loadSettings()
 
   initialSettings.value = {
-    reminders_enabled: settingsStore.reminders_enabled,
-    reminder_time: settingsStore.reminder_time,
-    show_archived_data: settingsStore.show_archived_data
+    reminders_enabled: settingsStore.settings.reminders_enabled,
+    reminder_time: settingsStore.settings.reminder_time,
+    show_archived_data: settingsStore.settings.show_archived_data
   }
 })
 
@@ -90,21 +91,21 @@ function saveTime() {
 
 const debouncedSave = debounce(() => {
   const hasChanged =
-      settingsStore.reminders_enabled !== initialSettings.value.reminders_enabled ||
-      settingsStore.reminder_time !== initialSettings.value.reminder_time ||
-      settingsStore.show_archived_data !== initialSettings.value.show_archived_data
+      settingsStore.settings.reminders_enabled !== initialSettings.value.reminders_enabled ||
+      settingsStore.settings.reminder_time !== initialSettings.value.reminder_time ||
+      settingsStore.settings.show_archived_data !== initialSettings.value.show_archived_data
 
   if (!hasChanged) return
 
   settingsStore.updateSettings({
-    reminders_enabled: settingsStore.reminders_enabled,
-    reminder_time: settingsStore.reminder_time,
-    show_archived_data: settingsStore.show_archived_data
+    reminders_enabled: settingsStore.settings.reminders_enabled,
+    reminder_time: settingsStore.settings.reminder_time,
+    show_archived_data: settingsStore.settings.show_archived_data
   }).then(() => {
     initialSettings.value = {
-      reminders_enabled: settingsStore.reminders_enabled,
-      reminder_time: settingsStore.reminder_time,
-      show_archived_data: settingsStore.show_archived_data
+      reminders_enabled: settingsStore.settings.reminders_enabled,
+      reminder_time: settingsStore.settings.reminder_time,
+      show_archived_data: settingsStore.settings.show_archived_data
     }
 
     showSavedMessage.value = true
@@ -184,6 +185,7 @@ watch(
     </div>
 
     <AlertMessage class="position-absolute mb-0" style="bottom: 0.5rem; right: calc(var(--bs-gutter-x) * .5); left: calc(var(--bs-gutter-x) * .5);" v-if="showSavedMessage" message="Настройки сохранены" type="success" />
+    <AlertMessage class="position-absolute mb-0" style="bottom: 0.5rem; right: calc(var(--bs-gutter-x) * .5); left: calc(var(--bs-gutter-x) * .5);" v-if="error" :message="error" type="danger" />
   </div>
 </template>
 

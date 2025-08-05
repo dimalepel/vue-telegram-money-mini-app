@@ -15,7 +15,7 @@ export const useWalletStore = defineStore('wallet', {
   getters: {
     visibleWallets: (state) => {
       const settingsStore = useSettingsStore()
-      const showArchived = settingsStore.show_archived_data === true
+      const showArchived = settingsStore.settings.show_archived_data === true
 
       return showArchived
         ? state.wallets
