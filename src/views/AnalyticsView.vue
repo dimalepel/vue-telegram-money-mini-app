@@ -194,7 +194,14 @@ const cashFlow = computed(() => {
   let income = 0
   let expenditure = 0
 
-  filteredTransactionsByType.value.forEach(tx => {
+  transactions.value.forEach(tx => {
+    // фильтруем по месяцу
+    if (!tx.date?.startsWith(selectedMonth.value)) return
+
+    // фильтруем по кошельку (если выбран конкретный)
+    if (selectedWalletId.value !== null && tx.wallet_id !== selectedWalletId.value) return
+
+    // считаем доходы и расходы по типу
     if (tx.type === TransactionTypes.INCOME) {
       income += tx.amount
     } else if (tx.type === TransactionTypes.EXPENDITURE) {
