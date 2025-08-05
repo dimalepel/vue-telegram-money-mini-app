@@ -137,24 +137,24 @@ watch(
     </div>
 
     <!-- Переключатель -->
-    <div class="btn-group-vertical">
-      <div class="form-check form-switch btn btn-setting btn-outline-secondary text-start d-flex align-items-center justify-content-between">
+    <ul class="list-group">
+      <li class="list-group-item form-check form-switch btn-outline-secondary text-start d-flex align-items-center justify-content-between">
         <label class="form-check-label flex-grow-1 text-start" for="toggle-notification">Напоминания</label>
         <input class="form-check-input" type="checkbox" id="toggle-notification" v-model="remindersEnabled" />
-      </div>
+      </li>
 
       <!-- Кнопка для открытия модалки -->
-      <div v-if="remindersEnabled" class="btn btn-outline-secondary text-start d-flex align-items-center" @click="openTimePicker">
+      <li v-if="remindersEnabled" class="list-group-item text-start d-flex align-items-center" @click="openTimePicker">
         Время напоминания
         <span class="ms-auto">{{ reminderTime }}</span>
         <i class="bi bi-chevron-right"></i>
-      </div>
+      </li>
 
-      <div class="form-check form-switch btn btn-setting btn-outline-secondary text-start d-flex align-items-center justify-content-between">
+      <li class="form-check form-switch list-group-item btn-outline-secondary text-start d-flex align-items-center justify-content-between">
         <label class="form-check-label flex-grow-1 text-start" for="toggle-archived">Показывать архивные данные</label>
         <input class="form-check-input" type="checkbox" id="toggle-archived" v-model="showArchivedData" />
-      </div>
-    </div>
+      </li>
+    </ul>
 
     <!-- Модалка Bootstrap 5 -->
     <div class="modal fade" id="timePickerModal" tabindex="-1" aria-labelledby="timePickerModalLabel" aria-hidden="true">
@@ -190,8 +190,11 @@ watch(
 </template>
 
 <style scoped>
-.btn-setting {
+.btn-setting,
+.list-group-item {
   --bs-btn-padding-y: 0.575rem;
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-list-group-color: #6c757d;
 }
 
 .form-check {

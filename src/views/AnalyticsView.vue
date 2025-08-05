@@ -74,14 +74,14 @@
         <!-- Денежный поток -->
         <div v-if="selectedDataset !== 'all'">
           <div class="fw-bold text-primary mt-4 mb-2">Денежный поток:</div>
-          <ul class="btn-group-vertical mb-2 w-100 ps-0  mb-0">
-            <li class="d-flex justify-content-between btn btn-outline-secondary">
+          <ul class="list-group mb-2 w-100 ps-0  mb-0">
+            <li class="d-flex justify-content-between list-group-item">
               <strong><i class="text-success bi bi-arrow-down-circle-fill"></i> Доход:</strong> {{ cashFlow.income }} BYN
             </li>
-            <li class="d-flex justify-content-between btn btn-outline-secondary">
+            <li class="d-flex justify-content-between list-group-item">
               <strong><i class="text-danger bi bi-arrow-up-circle-fill"></i> Расход:</strong> {{ cashFlow.expenditure }} BYN
             </li>
-            <li class="d-flex justify-content-between btn btn-outline-secondary">
+            <li class="d-flex justify-content-between list-group-item">
               <strong>Баланс:</strong> {{ cashFlow.balance }} BYN
             </li>
           </ul>
@@ -122,7 +122,9 @@
       <div v-else class="d-flex flex-column flex-grow-1">
         <AlertMessage  message="Нет операций в этом месяце"/>
 
-        <button @click="goTo(selectedDataset)" v-if="selectedDataset === TransactionTypes.EXPENDITURE || selectedDataset === TransactionTypes.INCOME" class="btn btn-primary w-100 mt-auto">Добавить транзакцию</button>
+        <button @click="goTo(selectedDataset)" v-if="selectedDataset === TransactionTypes.EXPENDITURE || selectedDataset === TransactionTypes.INCOME" class="btn btn-primary w-100 mt-auto">
+          <i class="bi bi-plus-lg me-1"></i> Добавить транзакцию
+        </button>
       </div>
     </div>
   </div>
