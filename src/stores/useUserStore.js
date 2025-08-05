@@ -55,7 +55,8 @@ export const useUserStore = defineStore('user', {
             fullName: tgUser.first_name,
             telegram_id: tgUser.id,
             email: `${tgUser.id}_mymoney@app.com`,
-            password: `${tgUser.id}`
+            password: `${tgUser.id}`,
+            created_at: new Date().toISOString(),
           }, {
             headers: {
               Accept: "application/json",

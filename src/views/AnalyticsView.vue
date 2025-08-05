@@ -76,13 +76,13 @@
           <div class="fw-bold text-primary mt-4 mb-2">Денежный поток:</div>
           <ul class="btn-group-vertical mb-2 w-100 ps-0  mb-0">
             <li class="d-flex justify-content-between btn btn-outline-secondary">
-              <strong><i class="text-success bi bi-arrow-down-circle-fill"></i> Доход:</strong> ХХ BYN
+              <strong><i class="text-success bi bi-arrow-down-circle-fill"></i> Доход:</strong> {{ cashFlow.income }} BYN
             </li>
             <li class="d-flex justify-content-between btn btn-outline-secondary">
-              <strong><i class="text-danger bi bi-arrow-up-circle-fill"></i> Расход:</strong> ХХ BYN
+              <strong><i class="text-danger bi bi-arrow-up-circle-fill"></i> Расход:</strong> {{ cashFlow.expenditure }} BYN
             </li>
             <li class="d-flex justify-content-between btn btn-outline-secondary">
-              <strong>Баланс:</strong> ХХ BYN
+              <strong>Баланс:</strong> {{ cashFlow.balance }} BYN
             </li>
           </ul>
         </div>
@@ -187,6 +187,25 @@ onMounted(async () => {
   } else {
     // Нет данных совсем — но можно установить текущий месяц вручную
     selectedMonth.value = thisMonth
+  }
+})
+
+const cashFlow = computed(() => {
+  let income = 0
+  let expenditure = 0
+
+  filteredTransactionsByType.value.forEach(tx => {
+    if (tx.type === TransactionTypes.INCOME) {
+      income += tx.amount
+    } else if (tx.type === TransactionTypes.EXPENDITURE) {
+      expenditure += Math.abs(tx.amount)
+    }
+  })
+
+  return {
+    income: income.toFixed(2),
+    expenditure: expenditure.toFixed(2),
+    balance: (income - expenditure).toFixed(2)
   }
 })
 
