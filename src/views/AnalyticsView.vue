@@ -76,13 +76,13 @@
           <div class="fw-bold text-primary mt-4 mb-2">Денежный поток:</div>
           <ul class="list-group mb-2 w-100 ps-0  mb-0">
             <li class="d-flex justify-content-between list-group-item">
-              <strong><i class="text-success bi bi-arrow-down-circle-fill"></i> Доход:</strong> {{ cashFlow.income }} BYN
+              <strong><i class="text-success bi bi-arrow-down-circle-fill"></i> Доход:</strong> {{ cashFlow.income }} {{ getCurrencyDisplay(defaultCurrency) }}
             </li>
             <li class="d-flex justify-content-between list-group-item">
-              <strong><i class="text-danger bi bi-arrow-up-circle-fill"></i> Расход:</strong> {{ cashFlow.expenditure }} BYN
+              <strong><i class="text-danger bi bi-arrow-up-circle-fill"></i> Расход:</strong> {{ cashFlow.expenditure }} {{ getCurrencyDisplay(defaultCurrency) }}
             </li>
             <li class="d-flex justify-content-between list-group-item">
-              <strong>Баланс:</strong> {{ cashFlow.balance }} BYN
+              <strong>Баланс:</strong> {{ cashFlow.balance }} {{ getCurrencyDisplay(defaultCurrency) }}
             </li>
           </ul>
         </div>
@@ -101,7 +101,7 @@
                 {{ item.description }}
                 <div class="d-flex align-items-center flex-wrap">
                   <strong :class="['me-2', item.type === TransactionTypes.TRANSFER ? 'text-info' : item.amount > 0 ? 'text-success' : 'text-danger']">
-                    {{ item.type === TransactionTypes.TRANSFER ? `${item.amount.toFixed(2)}` : item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} BYN
+                    {{ item.type === TransactionTypes.TRANSFER ? `${item.amount.toFixed(2)}` : item.amount > 0 ? `+${item.amount.toFixed(2)}` : `${item.amount.toFixed(2)}` }} {{ getCurrencyDisplay(getCurrencyByWalletId(item.wallet_id)) }}
                   </strong>
                   <span v-if="item.type !== TransactionTypes.TRANSFER" class="category-name"><i :style="`background-color: ${getCategoryById(item.category_id)?.color || '#cccccc'}`"></i> {{ getCategoryById(item.category_id)?.name || '—' }}</span>
                   <span v-if="item.type === TransactionTypes.TRANSFER" class="transfer-detail">{{ getWalletById(item.from_wallet_id)?.name }}<i class="bi bi-arrow-right-short"></i>{{ getWalletById(item.to_wallet_id)?.name }}</span>
@@ -148,6 +148,7 @@ import 'dayjs/locale/ru'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import {TransactionTypes} from "../constants/transactionTypes.js";
 import SvgLoader from "@/components/SvgLoader.vue";
+import {useSettingsStore} from "@/stores/useSettingsStore.js";
 
 dayjs.extend(isSameOrBefore)
 
@@ -157,6 +158,7 @@ const transactionStore = useTransactionStore()
 const walletStore = useWalletStore()
 const categoryStore = useCategoryStore()
 const router = useRouter()
+const settingsStore = useSettingsStore()
 
 const {transactions, loading, error} = storeToRefs(transactionStore)
 const {wallets, loading: walletsLoading, error: walletsError} = storeToRefs(walletStore)
@@ -169,6 +171,13 @@ const selectedWalletId = ref(null)
 const selectedDataset = ref(TransactionTypes.EXPENDITURE)
 const selectedChartType = ref('bar')
 const currentIndex = ref(0)
+
+const defaultCurrency = computed(() => {
+  if (selectedWalletId.value) {
+    return getCurrencyByWalletId(selectedWalletId.value)
+  }
+  return 'BYN'
+})
 
 onMounted(async () => {
   await Promise.all([
@@ -217,6 +226,11 @@ const cashFlow = computed(() => {
     balance: (income - expenditure).toFixed(2)
   }
 })
+
+function getCurrencyByWalletId(walletId) {
+  const wallet = walletStore.wallets.find(w => w.id === walletId);
+  return wallet?.currency || 'BYN';  // дефолт если не задана валюта
+}
 
 const availableMonths = computed(() => {
   if (transactions.value.length === 0) {
@@ -328,6 +342,8 @@ const chartData = computed(() => {
 
 const isMobile = window.innerWidth <= 768
 
+const currency = transactions.length > 0 ? transactions[0].currency : 'BYN';
+
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -357,7 +373,7 @@ const chartOptions = {
             value = value.toFixed(2); // округление
           }
 
-          return `${value} BYN`;
+          return `${value} ${getCurrencyDisplay(currency)}`;
         }
       }
     }
@@ -375,6 +391,11 @@ const chartOptions = {
       grace: '10%'
     }
   }
+}
+
+const getCurrencyDisplay = (code) => {
+  const currency = settingsStore.currencies.find(c => c.code === code)
+  return currency ? `${currency.symbol}` : code
 }
 
 const filteredTransactionsByType = computed(() => {

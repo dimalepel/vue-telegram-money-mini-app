@@ -47,6 +47,11 @@ function openModal(walletId) {
   showModal.value = true
 }
 
+const getCurrencyDisplay = (code) => {
+  const currency = settingsStore.currencies.find(c => c.code === code)
+  return currency ? `${currency.symbol}` : code
+}
+
 onMounted(() => {
   fetchWallets()
 })
@@ -67,7 +72,7 @@ onMounted(() => {
           <i :class="['bi', 'fs-2', 'me-2', 'lh-1', 'text-primary', `bi-${item['wallet-type'].type}`]"></i>
           <div class="flex-grow-1">
             <div class="mb-1">{{ item.name }}</div>
-            <div class="mb-1">Текущий баланс: <strong>{{ Number(item.balance).toFixed(2) }} BYN</strong></div>
+            <div class="mb-1">Текущий баланс: <strong>{{ Number(item.balance).toFixed(2) }} {{ getCurrencyDisplay(item.currency || 'BYN') }}</strong></div>
           </div>
 
           <router-link class="btn btn-outline-primary ms-2" :to="`/wallet/edit/${item.id}`">

@@ -14,6 +14,8 @@ import {
 import { computed } from 'vue'
 import {TransactionTypes} from "@/constants/transactionTypes.js";
 import { useCategoryStore } from '@/stores/useCategoryStore'
+import {useSettingsStore} from "@/stores/useSettingsStore.js";
+
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement)
 
@@ -33,6 +35,12 @@ const props = defineProps({
 })
 
 const categoryStore = useCategoryStore()
+const settingsStore = useSettingsStore()
+
+const getCurrencyDisplay = (code) => {
+  const currency = settingsStore.currencies.find(c => c.code === code)
+  return currency ? `${currency.symbol}` : code
+}
 
 function getCategoryNameById(id) {
   const category = props.categories.find(cat => cat.id === id)
@@ -79,6 +87,8 @@ const chartData = computed(() => {
   }
 })
 
+const transactionCurrency = props.transactions.length ? props.transactions[0].currency : 'BYN'
+
 const chartOptions = {
   responsive: true,
   plugins: {
@@ -90,7 +100,7 @@ const chartOptions = {
           const total = context.dataset.data.reduce((a, b) => a + b, 0)
           const value = context.raw
           const percentage = ((value / total) * 100).toFixed(1)
-          return `${context.label}: ${value.toFixed(2)} BYN (${percentage}%)`
+          return `${context.label}: ${value.toFixed(2)} ${getCurrencyDisplay(transactionCurrency)} (${percentage}%)`
         }
       }
     },

@@ -15,6 +15,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat'
 dayjs.extend(customParseFormat)
 import * as bootstrap from 'bootstrap'
 import AddCategoryModal from "@/views/settings/AddCategoryModal.vue";
+import { useSettingsStore } from '@/stores/useSettingsStore'
 
 const amount = ref('')
 const date = ref(new Date())
@@ -33,9 +34,11 @@ const transactionStore = useTransactionStore()
 const walletStore = useWalletStore()
 const userStore = useUserStore()
 const categoryStore = useCategoryStore()
+const settingsStore = useSettingsStore()
 
 const isIncome = ref(route.params.type === TransactionTypes.INCOME)
 const isTransfer = ref(route.params.type === TransactionTypes.TRANSFER)
+const selectedCurrency = ref(settingsStore.settings.currency || 'BYN')
 
 const fromWalletId = ref('')
 const toWalletId = ref('')
@@ -56,6 +59,8 @@ onMounted(() => {
   if (modalRef.value && modalRef.value.modalEl) { // modalEl из defineExpose
     modalInstance = new bootstrap.Modal(modalRef.value.modalEl)
   }
+
+  selectedCurrency.value = settingsStore.settings.currency || 'BYN';
 })
 
 watch(amount, (newVal) => {
@@ -115,6 +120,7 @@ const handleSubmit = async () => {
 
   try {
     const amt = Number(amount.value);
+    const currency = selectedCurrency.value
 
     if (isTransfer.value) {
 
@@ -125,6 +131,7 @@ const handleSubmit = async () => {
 
       await transactionStore.addTransaction({
         amount: amt,
+        currency: currency,
         date: dateForSaving,
         description: description.value || 'Перевод',
         type: TransactionTypes.TRANSFER,
@@ -147,6 +154,7 @@ const handleSubmit = async () => {
 
       await transactionStore.addTransaction({
         amount: delta,
+        currency: currency,
         date: dateForSaving, // ← ISO 8601 (UTC)
         description: description.value,
         type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
@@ -177,6 +185,15 @@ const handleSubmit = async () => {
       <div class="mb-3">
         <label class="form-label">Сумма</label>
         <input v-model="amount" type="text" class="form-control" placeholder="Введите сумму" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Валюта</label>
+        <select v-model="selectedCurrency" class="form-select">
+          <option v-for="currency in settingsStore.currencies" :key="currency.code" :value="currency.code">
+            {{ currency.name }} ({{ currency.symbol }})
+          </option>
+        </select>
       </div>
 
       <div class="mb-3">

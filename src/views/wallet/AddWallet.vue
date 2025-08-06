@@ -4,11 +4,13 @@ import { useRouter, useRoute } from 'vue-router'
 import { useWalletStore } from '@/stores/useWalletStore'
 import { useWalletTypeStore } from '@/stores/useWalletTypeStore'
 import { useUserStore } from '@/stores/useUserStore'
+import { useSettingsStore } from '@/stores/useSettingsStore'
 import MainHeader from "@/components/MainHeader.vue"
 
 const walletStore = useWalletStore()
 const walletTypeStore = useWalletTypeStore()
 const userStore = useUserStore()
+const settingsStore = useSettingsStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -21,9 +23,13 @@ const typeId = ref('')
 const balance = ref('')
 const error = ref(null)
 
+const selectedCurrency = ref(settingsStore.settings.currency || 'BYN')
+
 onMounted(async () => {
   await walletTypeStore.fetchWalletTypes()
   await walletStore.fetchWallets()
+
+  selectedCurrency.value = settingsStore.settings.currency || 'BYN'
 
   if (route.params.walletId) {
     isEditing.value = true
@@ -35,6 +41,7 @@ onMounted(async () => {
       typeId.value = Number(existing['wallet-type']?.id || 0)
       balance.value = existing.balance
       isArchived.value = existing.is_archived
+      selectedCurrency.value = existing.currency || settingsStore.settings.currency || 'BYN'
     } else {
       error.value = 'Депозит не найден'
     }
@@ -54,6 +61,7 @@ const handleSubmit = async () => {
         name: name.value,
         typeId: Number(typeId.value),
         balance: Number(balance.value),
+        currency: selectedCurrency.value,
         isArchived: isArchived.value
       })
     } else {
@@ -61,6 +69,7 @@ const handleSubmit = async () => {
         name: name.value,
         typeId: Number(typeId.value),
         balance: Number(balance.value),
+        currency: selectedCurrency.value,
         userId: userStore.id,
         isArchived: isArchived.value
       })
@@ -107,6 +116,15 @@ watch(balance, (newVal) => {
       <div class="mb-3">
         <label class="form-label">Сумма депозита</label>
         <input v-model="balance" type="text" class="form-control" placeholder="0"/>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Валюта</label>
+        <select v-model="selectedCurrency" class="form-select">
+          <option v-for="currency in settingsStore.currencies" :key="currency.code" :value="currency.code">
+            {{ currency.name }} ({{ currency.symbol }})
+          </option>
+        </select>
       </div>
 
       <div class="form-check form-switch mb-3 d-flex justify-content-between ps-0">

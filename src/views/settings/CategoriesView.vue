@@ -71,7 +71,7 @@ async function onSaveCategory(category) {
     <div v-else-if="categoryStore.error" class="text-danger">{{ categoryStore.error }}</div>
 
     <div v-else>
-      <ul v-if="filteredCategories.length > 0" class="list-group">
+      <ul v-if="filteredCategories.length > 0" class="list-group mb-3">
         <li v-for="cat in filteredCategories" :key="cat.id" class="list-group-item d-flex align-items-center">
           {{ cat.name }}
           <button class="btn btn-outline-primary ms-auto" @click="editCategory(cat)">

@@ -43,7 +43,7 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    async addWallet({ name, typeId, balance, userId, isArchived }) {
+    async addWallet({ name, typeId, balance, userId, isArchived, currency }) {
       const userStore = useUserStore()
 
       try {
@@ -53,7 +53,8 @@ export const useWalletStore = defineStore('wallet', {
           balance: balance,
           user_id: userId,
           created_at: new Date().toISOString(),
-          is_archived: isArchived
+          is_archived: isArchived,
+          currency: currency
         }, {
           headers: {
             Authorization: `Bearer ${userStore.token}`
@@ -131,7 +132,7 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    async editWallet(walletId, { name, typeId, balance, isArchived }) {
+    async editWallet(walletId, { name, typeId, balance, isArchived, currency }) {
       const userStore = useUserStore()
 
       try {
@@ -139,7 +140,8 @@ export const useWalletStore = defineStore('wallet', {
           name,
           'wallet-type_id': typeId,
           balance,
-          'is_archived': isArchived
+          'is_archived': isArchived,
+          currency
         }, {
           headers: {
             Authorization: `Bearer ${userStore.token}`
