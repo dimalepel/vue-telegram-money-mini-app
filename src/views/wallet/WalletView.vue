@@ -85,7 +85,7 @@ onMounted(() => {
             <div class="mb-1">
               Текущий баланс: <strong>{{ Number(item.balance).toFixed(2) }} {{ getCurrencyDisplay(item.currency || 'BYN') }}
               <span v-if="item.currency !== settingsStore.settings.currency" class="text-black-50 converted-balance">
-                ({{ formatConvertedBalance(item) }} {{ getCurrencyDisplay(settingsStore.settings.currency) }})
+                ({{ 0.00 }} {{ getCurrencyDisplay(settingsStore.settings.currency) }})
               </span>
             </strong></div>
           </div>
