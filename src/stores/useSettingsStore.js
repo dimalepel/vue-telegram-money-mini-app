@@ -24,6 +24,16 @@ export const useSettingsStore = defineStore('settings', {
       { code: 'GBP', name: 'Британский фунт стерлингов', symbol: '£' },
       { code: 'JPY', name: 'Японская йена', symbol: '¥' }
     ],
+    exchange_rate: [
+      {
+        "base": "USD",
+        "date": "2025-08-06",
+        "rates": {
+          "BYN": 2.845,
+          "USD": 1,
+        }
+      }
+    ],
     loading: false,
     error: null,
   }),
@@ -58,6 +68,16 @@ export const useSettingsStore = defineStore('settings', {
         this.settings.show_archived_data = data.show_archived_data ?? false
         this.settings.timezone = data.timezone ?? 'UTC'
         this.settings.currency = data.currency ?? 'BYN'
+        this.exchange_rate = [
+          {
+            "base": "USD",
+            "date": "2025-08-06",
+            "rates": {
+              "BYN": 2.845,
+              "USD": 1,
+            }
+          }
+        ]
 
         this.error = null;
 
@@ -135,6 +155,40 @@ export const useSettingsStore = defineStore('settings', {
 
     resetSettings() {
       this.show_archived_data = false
+    },
+
+    convertCurrency(amount, fromCurrency, toCurrency = this.settings.currency) {
+      if (fromCurrency === toCurrency) return amount;
+
+      // Ищем текущий курс с базой, например, USD
+      const exchange = this.exchange_rate.find(rate => rate.base);
+      if (!exchange) {
+        console.warn('Нет данных о курсе валют: отсутствует базовая валюта');
+        return amount;
+      }
+
+      // Обеспечиваем, что курс базовой валюты к самой себе = 1
+      if (!exchange.rates[exchange.base]) {
+        exchange.rates[exchange.base] = 1;
+      }
+
+      // Проверяем, есть ли курсы для fromCurrency и toCurrency
+      if (!exchange.rates[fromCurrency]) {
+        console.warn(`Нет курса для валюты отправления: ${fromCurrency}`);
+        return amount;
+      }
+      if (!exchange.rates[toCurrency]) {
+        console.warn(`Нет курса для валюты назначения: ${toCurrency}`);
+        return amount;
+      }
+
+      // Переводим amount в базовую валюту (например, в USD)
+      const amountInBase = amount / exchange.rates[fromCurrency];
+
+      // Переводим из базовой валюты в валюту назначения
+      const converted = amountInBase * exchange.rates[toCurrency];
+
+      return Number(converted.toFixed(2));
     }
   },
 
