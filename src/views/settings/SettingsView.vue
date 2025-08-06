@@ -138,6 +138,14 @@ watch(
     [remindersEnabled, reminderTime, showArchivedData, selectedCurrency],
     debouncedSave
 )
+
+watch(remindersEnabled, (newVal) => {
+  if (newVal && !settingsStore.settings.reminder_time) {
+    const timezone = settingsStore.settings.timezone || 'UTC'
+    const now = DateTime.local().setZone(timezone)
+    settingsStore.settings.reminder_time = now.set({ second: 0 }).toUTC().toFormat('HH:mm')
+  }
+})
 </script>
 
 <template>

@@ -111,6 +111,8 @@ export const useSettingsStore = defineStore('settings', {
             this.settings.currency = 'BYN'
 
             console.log(`Настройки созданы для пользователя ${userId}`)
+
+            this.error = null;
           } catch (createErr) {
             console.error('Ошибка при создании настроек:', createErr.response?.status, createErr.response?.data);
           }
