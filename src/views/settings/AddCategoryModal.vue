@@ -53,7 +53,7 @@ defineExpose({ modalEl, open })
 
 <template>
   <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true" ref="modalEl">
-    <div class="modal-dialog">
+    <div class="modal-dialog  modal-dialog-centered">
       <div class="modal-content">
         <!-- содержимое -->
         <div class="modal-header">

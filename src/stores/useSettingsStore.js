@@ -14,10 +14,25 @@ export const useSettingsStore = defineStore('settings', {
       reminder_time: '',
       show_archived_data: false,
       timezone: 'UTC',
+      currency: 'BYN'
     },
+    currencies: [
+      { code: 'USD', name: 'Доллар США', symbol: '$' },
+      { code: 'EUR', name: 'Евро', symbol: '€' },
+      { code: 'RUB', name: 'Российский рубль', symbol: '₽' },
+      { code: 'BYN', name: 'Белорусский рубль', symbol: 'Br' },
+      { code: 'GBP', name: 'Британский фунт стерлингов', symbol: '£' },
+      { code: 'JPY', name: 'Японская йена', symbol: '¥' }
+    ],
     loading: false,
     error: null,
   }),
+
+  getters: {
+    currentCurrency(state) {
+      return state.currencies.find(c => c.code === state.settings.currency) || null
+    }
+  },
 
   actions: {
     async loadSettings() {
@@ -42,6 +57,7 @@ export const useSettingsStore = defineStore('settings', {
         this.settings.reminder_time = data.reminder_time ?? ''
         this.settings.show_archived_data = data.show_archived_data ?? false
         this.settings.timezone = data.timezone ?? 'UTC'
+        this.settings.currency = data.currency ?? 'BYN'
 
         this.error = null;
 
@@ -59,7 +75,8 @@ export const useSettingsStore = defineStore('settings', {
               reminders_enabled: false,
               reminder_time: '',
               show_archived_data: false,
-              timezone
+              timezone,
+              currency: 'BYN'
             }, {
               headers: {
                 'x-api-token': settingsToken
@@ -71,6 +88,7 @@ export const useSettingsStore = defineStore('settings', {
             this.settings.reminder_time = ''
             this.settings.show_archived_data = false
             this.settings.timezone = 'UTC'
+            this.settings.currency = 'BYN'
 
             console.log(`Настройки созданы для пользователя ${userId}`)
           } catch (createErr) {
@@ -108,6 +126,8 @@ export const useSettingsStore = defineStore('settings', {
         this.settings.reminder_time = response.data?.reminder_time ?? ''
         this.settings.show_archived_data = response.data?.show_archived_data ?? false
         this.settings.timezone = response.data?.timezone ?? 'UTC'
+        this.settings.currency = response.data?.currency ?? 'BYN'
+
       } catch (err) {
         console.error('Ошибка при обновлении настроек:', err.response?.status, err.response?.data)
       }

@@ -28,7 +28,7 @@ function convertLocalToUtc(localTime, timezone) {
 const settingsStore = useSettingsStore()
 const appVersion = __APP_VERSION__
 const showSavedMessage = ref(false)
-const { error } = storeToRefs(settingsStore)
+const { error, currencies } = storeToRefs(settingsStore)
 
 const remindersEnabled = computed({
   get: () => settingsStore.settings.reminders_enabled,
@@ -44,11 +44,19 @@ const reminderTime = computed({
   }
 })
 
-
 const showArchivedData = computed({
   get: () => settingsStore.settings.show_archived_data,
   set: val => settingsStore.settings.show_archived_data = val
 })
+
+const selectedCurrency = computed({
+  get: () => settingsStore.settings.currency,
+  set: val => settingsStore.settings.currency = val
+})
+
+const currentCurrency = computed(() =>
+    currencies.value.find(c => c.code === selectedCurrency.value)
+)
 
 const timeConfig = {
   enableTime: true,
@@ -61,21 +69,27 @@ const timeConfig = {
 const initialSettings = ref({
   reminders_enabled: false,
   reminder_time: '',
-  show_archived_data: false
+  show_archived_data: false,
+  currency: 'BYN'
 })
 
 let timeModal
+let currencyModal
 
 onMounted(async () => {
   const modalElement = document.getElementById('timePickerModal')
   timeModal = new Modal(modalElement)
+
+  const currencyModalElement = document.getElementById('currencyPickerModal')
+  currencyModal = new Modal(currencyModalElement)
 
   await settingsStore.loadSettings()
 
   initialSettings.value = {
     reminders_enabled: settingsStore.settings.reminders_enabled,
     reminder_time: settingsStore.settings.reminder_time,
-    show_archived_data: settingsStore.settings.show_archived_data
+    show_archived_data: settingsStore.settings.show_archived_data,
+    currency: settingsStore.settings.currency
   }
 })
 
@@ -86,27 +100,32 @@ function openTimePicker() {
 
 function saveTime() {
   timeModal.hide()
-  // Здесь можно вызывать API для сохранения времени
+}
+
+function openCurrencyPicker() {
+  currencyModal.show()
+}
+
+function saveCurrency() {
+  currencyModal.hide()
 }
 
 const debouncedSave = debounce(() => {
   const hasChanged =
       settingsStore.settings.reminders_enabled !== initialSettings.value.reminders_enabled ||
       settingsStore.settings.reminder_time !== initialSettings.value.reminder_time ||
-      settingsStore.settings.show_archived_data !== initialSettings.value.show_archived_data
+      settingsStore.settings.show_archived_data !== initialSettings.value.show_archived_data ||
+      settingsStore.settings.currency !== initialSettings.value.currency
 
   if (!hasChanged) return
 
   settingsStore.updateSettings({
     reminders_enabled: settingsStore.settings.reminders_enabled,
     reminder_time: settingsStore.settings.reminder_time,
-    show_archived_data: settingsStore.settings.show_archived_data
+    show_archived_data: settingsStore.settings.show_archived_data,
+    currency: settingsStore.settings.currency
   }).then(() => {
-    initialSettings.value = {
-      reminders_enabled: settingsStore.settings.reminders_enabled,
-      reminder_time: settingsStore.settings.reminder_time,
-      show_archived_data: settingsStore.settings.show_archived_data
-    }
+    initialSettings.value = { ...settingsStore.settings }
 
     showSavedMessage.value = true
     setTimeout(() => {
@@ -116,7 +135,7 @@ const debouncedSave = debounce(() => {
 }, 1000)
 
 watch(
-    [remindersEnabled, reminderTime, showArchivedData],
+    [remindersEnabled, reminderTime, showArchivedData, selectedCurrency],
     debouncedSave
 )
 </script>
@@ -154,6 +173,14 @@ watch(
         <label class="form-check-label flex-grow-1 text-start" for="toggle-archived">Показывать архивные данные</label>
         <input class="form-check-input" type="checkbox" id="toggle-archived" v-model="showArchivedData" />
       </li>
+
+      <li class="list-group-item text-start d-flex align-items-center" @click="openCurrencyPicker">
+        Валюта по умолчанию
+        <span class="ms-auto">
+          {{ currentCurrency?.code }}
+        </span>
+        <i class="bi bi-chevron-right"></i>
+      </li>
     </ul>
 
     <!-- Модалка Bootstrap 5 -->
@@ -174,6 +201,35 @@ watch(
             <button type="button" class="btn btn-primary" @click="saveTime">
               Сохранить
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модалка выбора валюты -->
+    <div class="modal fade" id="currencyPickerModal" tabindex="-1" aria-labelledby="currencyPickerModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="currencyPickerModalLabel">Выберите валюту</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <div class="list-group">
+              <button
+                  v-for="currency in currencies"
+                  :key="currency.code"
+                  class="list-group-item list-group-item-action"
+                  :class="{ 'active': selectedCurrency === currency.code }"
+                  @click="selectedCurrency = currency.code"
+              >
+                {{ currency.code }} — {{ currency.name }} ({{ currency.symbol }})
+              </button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="button" class="btn btn-primary" @click="saveCurrency">Сохранить</button>
           </div>
         </div>
       </div>
