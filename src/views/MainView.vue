@@ -22,13 +22,16 @@ onMounted(async () => {
     showFallbackNotice.value = true;
 
     await userStore.findOrCreateUser(testTgUser);
-
-    showFallbackNotice.value = false;
   }
 
   await settingsStore.loadSettings();
 
-  router.push('/add-record');
+  setTimeout(() => {
+    if (showFallbackNotice.value === true) showFallbackNotice.value = false;
+
+    router.push('/add-record');
+  }, 2000)
+  
 })
 </script>
 
