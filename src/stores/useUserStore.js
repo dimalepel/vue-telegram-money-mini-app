@@ -12,6 +12,7 @@ export const useUserStore = defineStore('user', {
     status: '',
     email: '',
     isAuthenticated: false,
+    createdAt: null,
     token: ''
   }),
 
@@ -40,12 +41,13 @@ export const useUserStore = defineStore('user', {
           }
         });
 
-        //console.log(res.data.token)
+        console.log(res.data)
         const storageData = {
           id: res.data.data.id,
           telegram_id: res.data.data.telegram_id,
           first_name: res.data.data.first_name,
-          token: res.data.token
+          token: res.data.token,
+          created_at: res.data.data.created_at,
         }
         this._setUser(storageData)
 
@@ -87,6 +89,7 @@ export const useUserStore = defineStore('user', {
       this.username = data.username
       this.status = data.status || ''
       this.email = data.email || ''
+      this.createdAt = data.created_at
       this.isAuthenticated = true
       this.token = data.token
     },
