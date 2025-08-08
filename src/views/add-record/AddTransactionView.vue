@@ -24,9 +24,12 @@ const config = {
   dateFormat: 'd.m.Y',
   mode: 'single',
 }
+const originalAmount = ref('')
 const description = ref('')
 const walletId = ref('')
 const categoryId = ref('')
+const splitItems = ref([])
+
 const router = useRouter()
 const route = useRoute()
 
@@ -47,6 +50,49 @@ const transactionTitle = computed(() => {
   if (isTransfer.value) return 'Перевод'
   return isIncome.value ? 'Доход' : 'Расход'
 })
+
+watch(amount, (newVal) => {
+  // очистка и валидация как у тебя уже есть
+  let cleaned = String(newVal)
+      .replace(',', '.')
+      .replace(/[^0-9.]/g, '')
+      .replace(/(\..*)\./g, '$1')
+
+  const match = cleaned.match(/^(\d+)(\.(\d{0,2})?)?/)
+  amount.value = match ? match[1] + (match[2] || '') : ''
+
+  // Сохраняем оригинальную сумму, если еще пусто
+  if (!originalAmount.value && amount.value) {
+    originalAmount.value = amount.value
+  }
+})
+
+watch(splitItems, (items) => {
+  if (items.length === 0) {
+    // если детей нет — возвращаем amount к originalAmount
+    if (originalAmount.value) {
+      amount.value = originalAmount.value
+    }
+    return
+  }
+
+  // считаем сумму всех amount в splitItems
+  let totalChildAmount = 0
+  for (const item of items) {
+    const val = parseFloat(item.amount)
+    if (!isNaN(val)) {
+      totalChildAmount += val
+    }
+  }
+
+  // Предполагаем, что родительская сумма - сумма детей
+  // Если расход — amount отрицательный, иначе положительный (подстрой под свой кейс)
+  // Здесь пример для расхода — отрицательное число
+  amount.value = (originalAmount.value ? parseFloat(originalAmount.value) : 0) - totalChildAmount
+
+  // При доходе — поменяй логику на сложение, если нужно
+}, { deep: true })
+
 
 walletStore.fetchWallets?.()
 categoryStore.fetchCategories?.()
@@ -94,6 +140,24 @@ function openAddModal() {
   }
 }
 
+function addSplitItem() {
+  splitItems.value.push({
+    amount: '',
+    categoryId: '',
+    description: ''
+  })
+}
+
+function removeSplitItem(index) {
+  splitItems.value.splice(index, 1)
+}
+
+function onSplitClick() {
+  if (splitItems.value.length === 0) {
+    addSplitItem()
+  }
+}
+
 async function onSaveCategory(category) {
   const created = await categoryStore.createCategory(
       category.name,
@@ -107,6 +171,72 @@ async function onSaveCategory(category) {
   }
 }
 
+// const handleSubmit = async () => {
+//   if (!amount.value || !date.value) return;
+//
+//   let parsedDate = Array.isArray(date.value) ? date.value[0] : date.value;
+//
+//   if (!(parsedDate instanceof Date)) {
+//     parsedDate = dayjs(date.value, 'DD.MM.YYYY').toDate();
+//   }
+//
+//   const dateForSaving = parsedDate.toISOString();
+//
+//   try {
+//     const amt = Number(amount.value);
+//     const currency = selectedCurrency.value
+//
+//     if (isTransfer.value) {
+//
+//       if (!fromWalletId.value || !toWalletId.value || fromWalletId.value === toWalletId.value) {
+//         alert('Выберите разные кошельки для перевода')
+//         return;
+//       }
+//
+//       await transactionStore.addTransaction({
+//         amount: amt,
+//         currency: currency,
+//         date: dateForSaving,
+//         description: description.value || 'Перевод',
+//         type: TransactionTypes.TRANSFER,
+//         user_id: userStore.id,
+//         from_wallet_id: Number(fromWalletId.value),
+//         to_wallet_id: Number(toWalletId.value),
+//         category_id: null,
+//         created_at: new Date().toISOString()
+//       });
+//
+//       await walletStore.updateWalletBalance(Number(fromWalletId.value), -amt);
+//       await walletStore.updateWalletBalance(Number(toWalletId.value), amt);
+//     } else {
+//       if (!walletId.value || !categoryId.value) {
+//         alert('Выберите депозит и категорию')
+//         return;
+//       }
+//
+//       const delta = isIncome.value ? Number(amt) : -Number(amt)
+//
+//       await transactionStore.addTransaction({
+//         amount: delta,
+//         currency: currency,
+//         date: dateForSaving, // ← ISO 8601 (UTC)
+//         description: description.value,
+//         type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
+//         user_id: userStore.id,
+//         wallet_id: Number(walletId.value),
+//         category_id: Number(categoryId.value),
+//         created_at: new Date().toISOString()
+//       })
+//
+//       await walletStore.updateWalletBalance(Number(walletId.value), delta)
+//     }
+//
+//     router.push('/analytics');
+//   } catch (e) {
+//     console.error('Ошибка при добавлении операции:', e)
+//     alert('Не удалось сохранить операцию. Попробуйте снова.')
+//   }
+// }
 const handleSubmit = async () => {
   if (!amount.value || !date.value) return;
 
@@ -120,18 +250,17 @@ const handleSubmit = async () => {
 
   try {
     const amt = Number(amount.value);
-    const currency = selectedCurrency.value
+    const currency = selectedCurrency.value;
 
     if (isTransfer.value) {
-
       if (!fromWalletId.value || !toWalletId.value || fromWalletId.value === toWalletId.value) {
-        alert('Выберите разные кошельки для перевода')
+        alert('Выберите разные кошельки для перевода');
         return;
       }
 
       await transactionStore.addTransaction({
         amount: amt,
-        currency: currency,
+        currency,
         date: dateForSaving,
         description: description.value || 'Перевод',
         type: TransactionTypes.TRANSFER,
@@ -144,33 +273,76 @@ const handleSubmit = async () => {
 
       await walletStore.updateWalletBalance(Number(fromWalletId.value), -amt);
       await walletStore.updateWalletBalance(Number(toWalletId.value), amt);
+
     } else {
-      if (!walletId.value || !categoryId.value) {
-        alert('Выберите депозит и категорию')
+      if (!walletId.value) {
+        alert('Выберите депозит');
         return;
       }
 
-      const delta = isIncome.value ? Number(amt) : -Number(amt)
+      if (splitItems.value.length > 0) {
+        // Есть разбивка — сохраняем родительскую транзакцию с общей суммой
+        const parentPayload = {
+          amount: isIncome.value ? amt : -amt,
+          currency,
+          date: dateForSaving,
+          description: description.value,
+          type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
+          user_id: userStore.id,
+          wallet_id: Number(walletId.value),
+          category_id: categoryId.value ? Number(categoryId.value) : null,
+          created_at: new Date().toISOString()
+        }
 
-      await transactionStore.addTransaction({
-        amount: delta,
-        currency: currency,
-        date: dateForSaving, // ← ISO 8601 (UTC)
-        description: description.value,
-        type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
-        user_id: userStore.id,
-        wallet_id: Number(walletId.value),
-        category_id: Number(categoryId.value),
-        created_at: new Date().toISOString()
-      })
+        // Добавляем дочерние
+        parentPayload.children = splitItems.value.map(item => ({
+          amount: isIncome.value ? Number(item.amount) : -Number(item.amount),
+          currency,
+          date: dateForSaving,
+          description: item.description || '',
+          type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
+          user_id: userStore.id,
+          wallet_id: Number(walletId.value),
+          category_id: Number(item.categoryId),
+          created_at: new Date().toISOString()
+        }))
 
-      await walletStore.updateWalletBalance(Number(walletId.value), delta)
+        await transactionStore.addTransaction(parentPayload);
+
+        // Баланс кошелька обновляем на сумму родителя (которая равна сумме детей)
+        const delta = isIncome.value ? Number(amt) : -Number(amt);
+        await walletStore.updateWalletBalance(Number(walletId.value), delta);
+
+      } else {
+        // Обычное добавление без разбивки
+        if (!categoryId.value) {
+          alert('Выберите категорию');
+          return;
+        }
+
+        const delta = isIncome.value ? Number(amt) : -Number(amt);
+
+        await transactionStore.addTransaction({
+          amount: delta,
+          currency,
+          date: dateForSaving,
+          description: description.value,
+          type: isIncome.value ? TransactionTypes.INCOME : TransactionTypes.EXPENDITURE,
+          user_id: userStore.id,
+          wallet_id: Number(walletId.value),
+          category_id: Number(categoryId.value),
+          created_at: new Date().toISOString()
+        });
+
+        await walletStore.updateWalletBalance(Number(walletId.value), delta);
+      }
     }
 
     router.push('/analytics');
+
   } catch (e) {
-    console.error('Ошибка при добавлении операции:', e)
-    alert('Не удалось сохранить операцию. Попробуйте снова.')
+    console.error('Ошибка при добавлении операции:', e);
+    alert('Не удалось сохранить операцию. Попробуйте снова.');
   }
 }
 </script>
@@ -251,6 +423,36 @@ const handleSubmit = async () => {
         </div>
       </div>
 
+      <!-- UI разбиения на категории -->
+      <div class="mb-3" v-if="route.params.type === TransactionTypes.EXPENDITURE">
+        <div v-for="(item, index) in splitItems" :key="index" class="border rounded p-1 mb-3">
+          <div class="row">
+            <div class="col-4">
+              <input v-model="item.amount" type="text" class="form-control" placeholder="Сумма" />
+            </div>
+            <div class="col-6">
+              <select v-model="item.categoryId" class="form-select">
+                <option value="">Выберите категорию</option>
+                <option v-for="cat in filteredCategories" :key="cat.id" :value="cat.id">
+                  {{ cat.name }}
+                </option>
+              </select>
+            </div>
+            <div class="col-12 order-1 mt-2">
+              <input v-model="item.description" type="text" class="form-control" placeholder="Комментарий" />
+            </div>
+            <div class="col-2">
+              <button type="button" class="w-100 btn btn-outline-danger" @click="removeSplitItem(index)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary w-100 mt-auto" @click="addSplitItem">
+          <i class="bi bi-scissors"></i> {{ splitItems.length === 0 ? 'Разбить чек' : 'Добавить позицию' }}
+        </button>
+      </div>
+
       <div class="mb-3">
         <label class="form-label">Комментарий</label>
         <textarea v-model="description" class="form-control" />
@@ -264,3 +466,9 @@ const handleSubmit = async () => {
 
   </div>
 </template>
+
+<style scoped>
+.row {
+  --bs-gutter-x: 0.5rem;
+}
+</style>
