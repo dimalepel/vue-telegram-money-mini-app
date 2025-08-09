@@ -16,6 +16,7 @@ dayjs.extend(customParseFormat)
 import * as bootstrap from 'bootstrap'
 import AddCategoryModal from "@/views/settings/AddCategoryModal.vue";
 import { useSettingsStore } from '@/stores/useSettingsStore'
+import {storeToRefs} from "pinia";
 
 const amount = ref('')
 const date = ref(new Date())
@@ -38,6 +39,8 @@ const walletStore = useWalletStore()
 const userStore = useUserStore()
 const categoryStore = useCategoryStore()
 const settingsStore = useSettingsStore()
+
+const {visibleWallets} = storeToRefs(walletStore)
 
 const isIncome = ref(route.params.type === TransactionTypes.INCOME)
 const isTransfer = ref(route.params.type === TransactionTypes.TRANSFER)
@@ -378,7 +381,7 @@ const handleSubmit = async () => {
         <label class="form-label">Депозит</label>
         <select v-model="walletId" class="form-select">
           <option value="">Выберите депозит</option>
-          <option :value="wallet.id" v-for="wallet in walletStore.wallets" :key="wallet.id">
+          <option :value="wallet.id" v-for="wallet in visibleWallets" :key="wallet.id">
             {{ wallet.name }}
           </option>
         </select>
@@ -389,7 +392,7 @@ const handleSubmit = async () => {
         <label class="form-label">С кошелька</label>
         <select v-model="fromWalletId" class="form-select mb-2">
           <option value="">Выберите источник</option>
-          <option :value="wallet.id" v-for="wallet in walletStore.wallets" :key="'from-' + wallet.id">
+          <option :value="wallet.id" v-for="wallet in visibleWallets" :key="'from-' + wallet.id">
             {{ wallet.name }}
           </option>
         </select>
@@ -397,7 +400,7 @@ const handleSubmit = async () => {
         <label class="form-label">На кошелек</label>
         <select v-model="toWalletId" class="form-select">
           <option value="">Выберите получателя</option>
-          <option :value="wallet.id" v-for="wallet in walletStore.wallets" :key="'to-' + wallet.id">
+          <option :value="wallet.id" v-for="wallet in visibleWallets" :key="'to-' + wallet.id">
             {{ wallet.name }}
           </option>
         </select>
