@@ -51,6 +51,13 @@ function openModal(walletId) {
   showModal.value = true
 }
 
+function formatNumberWithSpaces(num) {
+  const str = typeof num === 'number' ? num.toString() : num;
+  const parts = str.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return parts.join('.');
+}
+
 // function formatConvertedBalance(item) {
 //   const converted = this.settingsStore.convertCurrency(
 //       Number(item.balance),
@@ -87,9 +94,9 @@ onMounted(() => {
           <div class="flex-grow-1">
             <div class="mb-1">{{ item.name }}</div>
             <div class="mb-1">
-              Текущий баланс: <strong>{{ Number(item.balance).toFixed(2) }} {{ getCurrencyDisplay(item.currency || 'BYN') }}
+              Баланс: <strong>{{ formatNumberWithSpaces(Number(item.balance).toFixed(2)) }} {{ getCurrencyDisplay(item.currency || 'BYN') }}
               <span v-if="item.currency !== settingsStore.settings.currency" class="text-black-50 converted-balance">
-                ({{ exchangeRatesStore.convertToDefaultCurrency(Number(item.balance), item.currency, settingsStore.settings.currency) }} {{ getCurrencyDisplay(settingsStore.settings.currency) }})
+                ({{ formatNumberWithSpaces(exchangeRatesStore.convertToDefaultCurrency(Number(item.balance), item.currency, settingsStore.settings.currency).toFixed(2)) }} {{ getCurrencyDisplay(settingsStore.settings.currency) }})
               </span>
             </strong></div>
           </div>

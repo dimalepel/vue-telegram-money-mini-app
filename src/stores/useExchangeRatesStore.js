@@ -23,8 +23,6 @@ export const useExchangeRatesStore = defineStore('exchangeRates', {
       this.loading = true
       this.error = null
 
-      console.log('settingsURL:', settingsURL)
-
       try {
         const { data } = await axios.get(`${settingsURL}/exchange-rates/`)
 
