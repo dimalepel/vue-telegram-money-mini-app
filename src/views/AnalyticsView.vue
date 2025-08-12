@@ -112,13 +112,13 @@
           <div class="fw-bold text-primary mt-4 mb-2">Денежный поток:</div>
           <ul class="list-group mb-2 w-100 ps-0  mb-0">
             <li class="d-flex justify-content-between list-group-item">
-              <strong><i class="text-success bi bi-arrow-down-circle-fill"></i> Доход:</strong> {{ cashFlow.income }} {{ getCurrencyDisplay(defaultCurrency) }}
+              <strong><i class="text-success bi bi-arrow-down-circle-fill"></i> Доход:</strong> {{ formatNumberWithSpaces(cashFlow.income) }} {{ getCurrencyDisplay(defaultCurrency) }}
             </li>
             <li class="d-flex justify-content-between list-group-item">
-              <strong><i class="text-danger bi bi-arrow-up-circle-fill"></i> Расход:</strong> {{ cashFlow.expenditure }} {{ getCurrencyDisplay(defaultCurrency) }}
+              <strong><i class="text-danger bi bi-arrow-up-circle-fill"></i> Расход:</strong> {{ formatNumberWithSpaces(cashFlow.expenditure) }} {{ getCurrencyDisplay(defaultCurrency) }}
             </li>
             <li class="d-flex justify-content-between list-group-item">
-              <strong>Баланс:</strong> {{ cashFlow.balance }} {{ getCurrencyDisplay(defaultCurrency) }}
+              <strong>Баланс:</strong> {{ formatNumberWithSpaces(cashFlow.balance) }} {{ getCurrencyDisplay(defaultCurrency) }}
             </li>
           </ul>
         </div>
@@ -360,6 +360,13 @@ const cashFlow = computed(() => {
     balance: (income - expenditure).toFixed(2)
   }
 })
+
+function formatNumberWithSpaces(num) {
+  const str = typeof num === 'number' ? num.toString() : num;
+  const parts = str.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return parts.join('.');
+}
 
 function getCurrencyByWalletId(walletId) {
   const wallet = walletStore.wallets.find(w => w.id === walletId);
