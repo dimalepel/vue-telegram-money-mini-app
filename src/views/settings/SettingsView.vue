@@ -5,7 +5,6 @@ import MainHeader from "@/components/MainHeader.vue"
 import Flatpickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
 import debounce from 'lodash.debounce'
-import {useUserStore} from "@/stores/useUserStore";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import AlertMessage from "@/components/AlertMessage.vue";
 import { DateTime } from 'luxon'
@@ -26,9 +25,10 @@ function convertLocalToUtc(localTime, timezone) {
 }
 
 const settingsStore = useSettingsStore()
+const { error, currencies } = storeToRefs(settingsStore)
+
 const appVersion = __APP_VERSION__
 const showSavedMessage = ref(false)
-const { error, currencies } = storeToRefs(settingsStore)
 
 const remindersEnabled = computed({
   get: () => settingsStore.settings.reminders_enabled,
@@ -36,12 +36,8 @@ const remindersEnabled = computed({
 })
 
 const reminderTime = computed({
-  get() {
-    return convertUtcToLocalTime(settingsStore.settings.reminder_time, settingsStore.settings.timezone || 'UTC')
-  },
-  set(val) {
-    settingsStore.settings.reminder_time = convertLocalToUtc(val, settingsStore.settings.timezone || 'UTC')
-  }
+  get: () => convertUtcToLocalTime(settingsStore.settings.reminder_time, settingsStore.settings.timezone || 'UTC'),
+  set: val => settingsStore.settings.reminder_time = convertLocalToUtc(val, settingsStore.settings.timezone || 'UTC')
 })
 
 const showArchivedData = computed({
@@ -58,6 +54,25 @@ const currentCurrency = computed(() =>
     currencies.value.find(c => c.code === selectedCurrency.value)
 )
 
+const firstDayOfWeek = computed({
+  get: () => settingsStore.settings.first_day_of_week ?? 1, // по умолчанию понедельник
+  set: val => settingsStore.settings.first_day_of_week = val
+})
+
+const weekDays = {
+  0: 'Воскресенье',
+  1: 'Понедельник',
+  2: 'Вторник',
+  3: 'Среда',
+  4: 'Четверг',
+  5: 'Пятница',
+  6: 'Суббота'
+}
+
+const initialSettings = ref({})
+
+let timeModal, currencyModal, firstDayModal
+
 const timeConfig = {
   enableTime: true,
   noCalendar: true,
@@ -66,67 +81,56 @@ const timeConfig = {
   minuteIncrement: 1,
 }
 
-const initialSettings = ref({
-  reminders_enabled: false,
-  reminder_time: '',
-  show_archived_data: false,
-  currency: 'BYN'
-})
-
-let timeModal
-let currencyModal
+// const initialSettings = ref({
+//   reminders_enabled: false,
+//   reminder_time: '',
+//   show_archived_data: false,
+//   currency: 'BYN'
+// })
 
 onMounted(async () => {
-  const modalElement = document.getElementById('timePickerModal')
-  timeModal = new Modal(modalElement)
+  timeModal = new Modal(document.getElementById('timePickerModal'))
+  currencyModal = new Modal(document.getElementById('currencyPickerModal'))
+  firstDayModal = new Modal(document.getElementById('firstDayPickerModal'))
 
-  const currencyModalElement = document.getElementById('currencyPickerModal')
-  currencyModal = new Modal(currencyModalElement)
+  // const modalElement = document.getElementById('timePickerModal')
+  // timeModal = new Modal(modalElement)
+
+  // const currencyModalElement = document.getElementById('currencyPickerModal')
+  // currencyModal = new Modal(currencyModalElement)
 
   await settingsStore.loadSettings()
 
-  initialSettings.value = {
-    reminders_enabled: settingsStore.settings.reminders_enabled,
-    reminder_time: settingsStore.settings.reminder_time,
-    show_archived_data: settingsStore.settings.show_archived_data,
-    currency: settingsStore.settings.currency
-  }
+  initialSettings.value = { ...settingsStore.settings }
 })
 
-function openTimePicker() {
-  timeModal.show()
-}
+// onMounted(() => {
+//   const modalEl = document.getElementById('firstDayPickerModal')
+//   firstDayModal = new Modal(modalEl)
+// })
 
+const openTimePicker = () => timeModal.show()
+const saveTime = () => timeModal.hide()
 
-function saveTime() {
-  timeModal.hide()
-}
+const openCurrencyPicker = () => currencyModal.show()
+const saveCurrency = () => currencyModal.hide()
 
-function openCurrencyPicker() {
-  currencyModal.show()
-}
+const openFirstDayPicker = () => firstDayModal.show()
 
-function saveCurrency() {
-  currencyModal.hide()
-}
+const saveFirstDay = () => firstDayModal.hide()
 
 const debouncedSave = debounce(() => {
   const hasChanged =
       settingsStore.settings.reminders_enabled !== initialSettings.value.reminders_enabled ||
       settingsStore.settings.reminder_time !== initialSettings.value.reminder_time ||
       settingsStore.settings.show_archived_data !== initialSettings.value.show_archived_data ||
-      settingsStore.settings.currency !== initialSettings.value.currency
+      settingsStore.settings.currency !== initialSettings.value.currency ||
+      settingsStore.settings.first_day_of_week !== initialSettings.value.first_day_of_week
 
   if (!hasChanged) return
 
-  settingsStore.updateSettings({
-    reminders_enabled: settingsStore.settings.reminders_enabled,
-    reminder_time: settingsStore.settings.reminder_time,
-    show_archived_data: settingsStore.settings.show_archived_data,
-    currency: settingsStore.settings.currency
-  }).then(() => {
+  settingsStore.updateSettings({ ...settingsStore.settings }).then(() => {
     initialSettings.value = { ...settingsStore.settings }
-
     showSavedMessage.value = true
     setTimeout(() => {
       showSavedMessage.value = false
@@ -135,7 +139,7 @@ const debouncedSave = debounce(() => {
 }, 1000)
 
 watch(
-    [remindersEnabled, reminderTime, showArchivedData, selectedCurrency],
+    [remindersEnabled, reminderTime, showArchivedData, selectedCurrency, firstDayOfWeek],
     debouncedSave
 )
 
@@ -189,6 +193,12 @@ watch(remindersEnabled, (newVal) => {
         </span>
         <i class="bi bi-chevron-right"></i>
       </li>
+
+      <li class="list-group-item text-start d-flex align-items-center" @click="openFirstDayPicker">
+        Первый день недели
+        <span class="ms-auto">{{ weekDays[firstDayOfWeek] }}</span>
+        <i class="bi bi-chevron-right"></i>
+      </li>
     </ul>
 
     <!-- Модалка Bootstrap 5 -->
@@ -209,6 +219,35 @@ watch(remindersEnabled, (newVal) => {
             <button type="button" class="btn btn-primary" @click="saveTime">
               Сохранить
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модалка выбора дня недели -->
+    <div class="modal fade" id="firstDayPickerModal" tabindex="-1" aria-labelledby="firstDayPickerModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="firstDayPickerModalLabel">Выберите первый день недели</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <div class="list-group">
+              <button
+                  v-for="(day, num) in weekDays"
+                  :key="num"
+                  class="list-group-item list-group-item-action"
+                  :class="{ 'active': firstDayOfWeek === Number(num) }"
+                  @click="firstDayOfWeek = Number(num)"
+              >
+                {{ day }}
+              </button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="button" class="btn btn-primary" @click="saveFirstDay">Сохранить</button>
           </div>
         </div>
       </div>

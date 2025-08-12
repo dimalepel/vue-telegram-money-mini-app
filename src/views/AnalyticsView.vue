@@ -46,12 +46,12 @@
               </select>
             </div>
 
-            <div v-if="selectedPeriod === 'week'" class="mb-3">
-              <label class="form-label">Первый день недели:</label>
-              <select v-model="firstDayOfWeek" class="form-select">
-                <option v-for="(name, value) in weekDays" :key="value" :value="value">{{ name }}</option>
-              </select>
-            </div>
+            <!--            <div v-if="selectedPeriod === 'week'" class="mb-3">-->
+            <!--              <label class="form-label">Первый день недели:</label>-->
+            <!--              <select v-model="firstDayOfWeek" class="form-select">-->
+            <!--                <option v-for="(name, value) in weekDays" :key="value" :value="value">{{ name }}</option>-->
+            <!--              </select>-->
+            <!--            </div>-->
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" @click="showPeriodModal = false">Закрыть</button>
@@ -152,11 +152,10 @@
         </ul>
 
 
-
       </div>
 
       <div v-else class="d-flex flex-column flex-grow-1">
-        <AlertMessage  message="Нет операций в этом периоде"/>
+        <AlertMessage message="Нет операций в этом периоде"/>
 
         <button @click="goTo(selectedDataset)" v-if="selectedDataset === TransactionTypes.EXPENDITURE || selectedDataset === TransactionTypes.INCOME" class="btn btn-primary w-100 mt-auto">
           <i class="bi bi-plus-lg me-1"></i> Добавить транзакцию
@@ -169,7 +168,7 @@
 <script setup>
 import {ref, computed, onMounted, inject} from 'vue'
 import {storeToRefs} from 'pinia'
-import { useRouter } from 'vue-router'
+import {useRouter} from 'vue-router'
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
 
@@ -209,10 +208,9 @@ const router = useRouter()
 const showPeriodModal = ref(false)
 const selectedPeriod = ref('month') // today, week, month, year, all
 const currentOffset = ref(0)
-const firstDayOfWeek = ref(5) // 0 = Sunday, 1 = Monday, ..., 5 = Friday
 
 const {transactions, loading, error} = storeToRefs(transactionStore)
-const {wallets, loading: walletsLoading, error: walletsError} = storeToRefs(walletStore)
+const {loading: walletsLoading, error: walletsError} = storeToRefs(walletStore)
 const {allCategories: categories} = storeToRefs(categoryStore)
 
 const {visibleWallets} = storeToRefs(walletStore)
@@ -225,29 +223,33 @@ const currentIndex = ref(0)
 
 
 const periodOptions = [
-  { value: 'today', label: 'Сегодня' },
-  { value: 'week', label: 'Эта неделя' },
-  { value: 'month', label: 'Этот месяц' },
-  { value: 'year', label: 'Этот год' },
-  { value: 'all', label: 'Всё время' }
+  {value: 'today', label: 'Сегодня'},
+  {value: 'week', label: 'Эта неделя'},
+  {value: 'month', label: 'Этот месяц'},
+  {value: 'year', label: 'Этот год'},
+  {value: 'all', label: 'Всё время'}
 ]
 
-const weekDays = {
-  0: 'Воскресенье',
-  1: 'Понедельник',
-  2: 'Вторник',
-  3: 'Среда',
-  4: 'Четверг',
-  5: 'Пятница',
-  6: 'Суббота'
-}
+// const weekDays = {
+//   0: 'Воскресенье',
+//   1: 'Понедельник',
+//   2: 'Вторник',
+//   3: 'Среда',
+//   4: 'Четверг',
+//   5: 'Пятница',
+//   6: 'Суббота'
+// }
+
+const firstDayOfWeek = computed(() => {
+  return settingsStore.settings?.first_day_of_week ?? 1
+})
 
 const periodRange = computed(() => {
   const today = dayjs()
   switch (selectedPeriod.value) {
     case 'today': {
       const date = today.add(currentOffset.value, 'day')
-      return { start: date.startOf('day'), end: date.endOf('day') }
+      return {start: date.startOf('day'), end: date.endOf('day')}
     }
     case 'week': {
       const todayDate = today.add(currentOffset.value * 7, 'day')
@@ -262,15 +264,15 @@ const periodRange = computed(() => {
       const start = todayDate.subtract(diff, 'day').startOf('day')
       const end = start.add(6, 'day').endOf('day')
 
-      return { start, end }
+      return {start, end}
     }
     case 'month': {
       const date = today.add(currentOffset.value, 'month').startOf('month')
-      return { start: date, end: date.endOf('month') }
+      return {start: date, end: date.endOf('month')}
     }
     case 'year': {
       const date = today.add(currentOffset.value, 'year').startOf('year')
-      return { start: date, end: date.endOf('year') }
+      return {start: date, end: date.endOf('year')}
     }
     default:
       return {
@@ -281,7 +283,7 @@ const periodRange = computed(() => {
 })
 
 const currentPeriodLabel = computed(() => {
-  const { start, end } = periodRange.value
+  const {start, end} = periodRange.value
   if (!start || !end) return 'Все транзакции'
 
   if (selectedPeriod.value === 'today') {
@@ -332,7 +334,7 @@ const cashFlow = computed(() => {
   let income = 0
   let expenditure = 0
 
-  const { start, end } = periodRange.value
+  const {start, end} = periodRange.value
 
   transactions.value.forEach(tx => {
     // фильтруем по периоду
@@ -391,7 +393,7 @@ const availableMonths = computed(() => {
   while (current.isSameOrBefore(finalMonth)) {
     const value = current.format('YYYY-MM')
     const label = current.locale('ru').format('MMMM YYYY').replace(/^./, c => c.toUpperCase())
-    months.push({ value, label })
+    months.push({value, label})
     current = current.add(1, 'month')
   }
 
@@ -409,8 +411,8 @@ function nextPeriod() {
 function goTo(type) {
   router.push({
     name: 'AddTransaction',
-    params: { type },
-    query: { amount: 0 }
+    params: {type},
+    query: {amount: 0}
   })
 }
 
@@ -438,7 +440,7 @@ const filteredTransactions = computed(() => {
     }
 
     // фильтр по периоду (если не "all")
-    const { start, end } = periodRange.value
+    const {start, end} = periodRange.value
     if (start && end) {
       const txDate = dayjs(tx.date)
       if (!txDate.isBetween(start, end, null, '[]')) {
@@ -449,38 +451,6 @@ const filteredTransactions = computed(() => {
     return true
   })
 })
-
-// const dailyData = computed(() => {
-//   if (!periodRange.value.start || !periodRange.value.end) return [];
-//
-//   const start = dayjs(periodRange.value.start);
-//   const end = dayjs(periodRange.value.end);
-//   const txMap = {};
-//
-//   for (const tx of filteredTransactionsByType.value) {
-//     const txDate = dayjs(tx.date);
-//     if (txDate.isBefore(start) || txDate.isAfter(end)) continue;
-//
-//     const dayStr = txDate.format('YYYY-MM-DD');
-//     if (!txMap[dayStr]) txMap[dayStr] = 0;
-//     txMap[dayStr] += tx.amount;
-//   }
-//
-//   // Собираем результат — список дней с суммами, включая пустые дни
-//   const result = [];
-//   let current = start;
-//
-//   while (current.isSameOrBefore(end)) {
-//     const dayStr = current.format('YYYY-MM-DD');
-//     result.push({
-//       day: dayStr,
-//       amount: txMap[dayStr] || 0,
-//     });
-//     current = current.add(1, 'day');
-//   }
-//
-//   return result;
-// });
 
 const aggregatedData = computed(() => {
   if (!periodRange.value.start || !periodRange.value.end) return [];
@@ -516,32 +486,13 @@ const aggregatedData = computed(() => {
     current = current.add(1, useMonthly ? 'month' : 'day');
   }
 
-  return { data: result, useMonthly };
+  return {data: result, useMonthly};
 });
-
-// const chartData = computed(() => {
-//   if (selectedDataset.value === 'all') return null;
-//
-//   return {
-//     labels: dailyData.value.map(d =>
-//         dayjs(d.day).format('D dd')
-//     ),
-//     datasets: [
-//       {
-//         label: selectedDataset.value === TransactionTypes.INCOME ? 'Доходы' : 'Расходы',
-//         backgroundColor: selectedDataset.value === TransactionTypes.INCOME ? '#4caf50' : '#f44336',
-//         data: dailyData.value.map(d =>
-//             selectedDataset.value === TransactionTypes.INCOME ? d.amount : -d.amount
-//         )
-//       }
-//     ]
-//   }
-// });
 
 const chartData = computed(() => {
   if (selectedDataset.value === 'all') return null;
 
-  const { data, useMonthly } = aggregatedData.value;
+  const {data, useMonthly} = aggregatedData.value;
 
   return {
     labels: data.map(d =>

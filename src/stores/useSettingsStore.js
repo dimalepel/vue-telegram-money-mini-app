@@ -14,7 +14,8 @@ export const useSettingsStore = defineStore('settings', {
       reminder_time: '',
       show_archived_data: false,
       timezone: 'UTC',
-      currency: 'BYN'
+      currency: 'BYN',
+      first_day_of_week: 1
     },
     currencies: [
       { code: 'USD', name: 'Доллар США', symbol: '$' },
@@ -68,6 +69,8 @@ export const useSettingsStore = defineStore('settings', {
         this.settings.show_archived_data = data.show_archived_data ?? false
         this.settings.timezone = data.timezone ?? 'UTC'
         this.settings.currency = data.currency ?? 'BYN'
+        this.settings.first_day_of_week = data.first_day_of_week ?? 1
+
         this.exchange_rate = [
           {
             "base": "USD",
@@ -96,7 +99,8 @@ export const useSettingsStore = defineStore('settings', {
               reminder_time: '',
               show_archived_data: false,
               timezone,
-              currency: 'BYN'
+              currency: 'BYN',
+              first_day_of_week: 1
             }, {
               headers: {
                 'x-api-token': settingsToken
@@ -109,6 +113,7 @@ export const useSettingsStore = defineStore('settings', {
             this.settings.show_archived_data = false
             this.settings.timezone = 'UTC'
             this.settings.currency = 'BYN'
+            this.settings.first_day_of_week = 1
 
             console.log(`Настройки созданы для пользователя ${userId}`)
 
@@ -149,6 +154,7 @@ export const useSettingsStore = defineStore('settings', {
         this.settings.show_archived_data = response.data?.show_archived_data ?? false
         this.settings.timezone = response.data?.timezone ?? 'UTC'
         this.settings.currency = response.data?.currency ?? 'BYN'
+        this.settings.first_day_of_week = response.data?.first_day_of_week ?? 1
 
       } catch (err) {
         console.error('Ошибка при обновлении настроек:', err.response?.status, err.response?.data)
