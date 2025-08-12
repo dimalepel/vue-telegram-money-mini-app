@@ -7,9 +7,13 @@ import MainHeader from "@/components/MainHeader.vue";
 import DeleteWalletModal from "@/components/DeleteWalletModal.vue";
 import SvgLoader from "@/components/SvgLoader.vue";
 import { useSettingsStore } from "@/stores/useSettingsStore";
+import {useExchangeRatesStore} from "@/stores/useExchangeRatesStore";
 
 const walletStore = useWalletStore()
 const settingsStore = useSettingsStore()
+const exchangeRatesStore = useExchangeRatesStore()
+
+exchangeRatesStore.loadExchangeRates()
 
 const { wallets, loading, error } = storeToRefs(walletStore)
 const { fetchWallets } = walletStore
@@ -47,15 +51,15 @@ function openModal(walletId) {
   showModal.value = true
 }
 
-function formatConvertedBalance(item) {
-  const converted = this.settingsStore.convertCurrency(
-      Number(item.balance),
-      item.currency,
-      this.settingsStore.settings.currency
-  );
-
-  return converted.toFixed(2);
-}
+// function formatConvertedBalance(item) {
+//   const converted = this.settingsStore.convertCurrency(
+//       Number(item.balance),
+//       item.currency,
+//       this.settingsStore.settings.currency
+//   );
+//
+//   return converted.toFixed(2);
+// }
 
 const getCurrencyDisplay = (code) => {
   const currency = settingsStore.currencies.find(c => c.code === code)
@@ -84,8 +88,8 @@ onMounted(() => {
             <div class="mb-1">{{ item.name }}</div>
             <div class="mb-1">
               Текущий баланс: <strong>{{ Number(item.balance).toFixed(2) }} {{ getCurrencyDisplay(item.currency || 'BYN') }}
-              <span v-if="item.currency !== settingsStore.settings.currency" class="text-black-50 converted-balance d-none">
-                ({{ 0.00 }} {{ getCurrencyDisplay(settingsStore.settings.currency) }})
+              <span v-if="item.currency !== settingsStore.settings.currency" class="text-black-50 converted-balance">
+                ({{ exchangeRatesStore.convertToDefaultCurrency(Number(item.balance), item.currency, settingsStore.settings.currency) }} {{ getCurrencyDisplay(settingsStore.settings.currency) }})
               </span>
             </strong></div>
           </div>
