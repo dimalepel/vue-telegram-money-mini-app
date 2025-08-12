@@ -144,6 +144,16 @@ function openAddModal() {
 }
 
 function addSplitItem() {
+  // Проверяем, есть ли в splitItems элементы с пустыми обязательными полями
+  const hasEmptyFields = splitItems.value.some(item =>
+      !item.amount || !item.categoryId
+  );
+
+  if (hasEmptyFields) {
+    alert('Пожалуйста, заполните все поля у существующих позиций перед добавлением новой.');
+    return; // не добавляем новую позицию
+  }
+
   splitItems.value.push({
     amount: '',
     categoryId: '',
@@ -452,7 +462,12 @@ const handleSubmit = async () => {
           </div>
         </div>
         <button type="button" class="btn btn-primary w-100 mt-auto" @click="addSplitItem">
-          <i class="bi bi-scissors"></i> {{ splitItems.length === 0 ? 'Разбить чек' : 'Добавить позицию' }}
+          <span v-if="splitItems.length === 0">
+            <i class="bi bi-scissors"></i> Разбить чек
+          </span>
+          <span v-else>
+            <i class="bi bi-plus-lg me-1"></i> Добавить позицию
+          </span>
         </button>
       </div>
 
