@@ -6,6 +6,7 @@ import { useWalletTypeStore } from '@/stores/useWalletTypeStore'
 import { useUserStore } from '@/stores/useUserStore'
 import { useSettingsStore } from '@/stores/useSettingsStore'
 import MainHeader from "@/components/MainHeader.vue"
+import {CurrenciesList} from "@/constants/currenciesList"
 
 const walletStore = useWalletStore()
 const walletTypeStore = useWalletTypeStore()
@@ -121,7 +122,7 @@ watch(balance, (newVal) => {
       <div class="mb-3">
         <label class="form-label">Валюта</label>
         <select v-model="selectedCurrency" class="form-select">
-          <option v-for="currency in settingsStore.currencies" :key="currency.code" :value="currency.code">
+          <option v-for="currency in CurrenciesList" :key="currency.code" :value="currency.code">
             {{ currency.name }} ({{ currency.symbol }})
           </option>
         </select>

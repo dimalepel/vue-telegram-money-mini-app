@@ -15,6 +15,7 @@ import { computed } from 'vue'
 import {TransactionTypes} from "@/constants/transactionTypes.js";
 import { useCategoryStore } from '@/stores/useCategoryStore'
 import {useSettingsStore} from "@/stores/useSettingsStore.js";
+import {CurrenciesList} from "@/constants/currenciesList.js"
 
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement)
@@ -38,7 +39,7 @@ const categoryStore = useCategoryStore()
 const settingsStore = useSettingsStore()
 
 const getCurrencyDisplay = (code) => {
-  const currency = settingsStore.currencies.find(c => c.code === code)
+  const currency = CurrenciesList.find(c => c.code === code)
   return currency ? `${currency.symbol}` : code
 }
 

@@ -9,6 +9,7 @@ import { useSettingsStore } from "@/stores/useSettingsStore";
 import AlertMessage from "@/components/AlertMessage.vue";
 import { DateTime } from 'luxon'
 import {storeToRefs} from "pinia";
+import {CurrenciesList} from "@/constants/currenciesList"
 
 function convertUtcToLocalTime(utcTime, timezone) {
   if (!utcTime) return ''
@@ -51,7 +52,7 @@ const selectedCurrency = computed({
 })
 
 const currentCurrency = computed(() =>
-    currencies.value.find(c => c.code === selectedCurrency.value)
+    CurrenciesList.find(c => c.code === selectedCurrency.value)
 )
 
 const firstDayOfWeek = computed({
@@ -264,7 +265,7 @@ watch(remindersEnabled, (newVal) => {
           <div class="modal-body">
             <div class="list-group">
               <button
-                  v-for="currency in currencies"
+                  v-for="currency in CurrenciesList"
                   :key="currency.code"
                   class="list-group-item list-group-item-action"
                   :class="{ 'active': selectedCurrency === currency.code }"

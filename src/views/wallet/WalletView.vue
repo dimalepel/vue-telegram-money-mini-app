@@ -8,6 +8,7 @@ import DeleteWalletModal from "@/components/DeleteWalletModal.vue";
 import SvgLoader from "@/components/SvgLoader.vue";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import {useExchangeRatesStore} from "@/stores/useExchangeRatesStore";
+import {CurrenciesList} from "@/constants/currenciesList"
 
 const walletStore = useWalletStore()
 const settingsStore = useSettingsStore()
@@ -69,7 +70,7 @@ function formatNumberWithSpaces(num) {
 // }
 
 const getCurrencyDisplay = (code) => {
-  const currency = settingsStore.currencies.find(c => c.code === code)
+  const currency = CurrenciesList.find(c => c.code === code)
   return currency ? `${currency.symbol}` : code
 }
 

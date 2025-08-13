@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import {useUserStore} from "@/stores/useUserStore";
+import {CurrenciesList} from "@/constants/currenciesList.js"
 
 const settingsURL = import.meta.env.VITE_SETTINGS_API_URL
 const settingsToken = import.meta.env.VITE_SETTINGS_API_TOKEN
@@ -17,14 +18,14 @@ export const useSettingsStore = defineStore('settings', {
       currency: 'BYN',
       first_day_of_week: 1
     },
-    currencies: [
-      { code: 'USD', name: 'Доллар США', symbol: '$' },
-      { code: 'EUR', name: 'Евро', symbol: '€' },
-      { code: 'RUB', name: 'Российский рубль', symbol: '₽' },
-      { code: 'BYN', name: 'Белорусский рубль', symbol: 'Br' },
-      { code: 'GBP', name: 'Британский фунт стерлингов', symbol: '£' },
-      { code: 'JPY', name: 'Японская йена', symbol: '¥' }
-    ],
+    // currencies: [
+    //   { code: 'USD', name: 'Доллар США', symbol: '$' },
+    //   { code: 'EUR', name: 'Евро', symbol: '€' },
+    //   { code: 'RUB', name: 'Российский рубль', symbol: '₽' },
+    //   { code: 'BYN', name: 'Белорусский рубль', symbol: 'Br' },
+    //   { code: 'GBP', name: 'Британский фунт стерлингов', symbol: '£' },
+    //   { code: 'JPY', name: 'Японская йена', symbol: '¥' }
+    // ],
     // exchange_rate: [
     //   {
     //     "base": "USD",
@@ -41,7 +42,7 @@ export const useSettingsStore = defineStore('settings', {
 
   getters: {
     currentCurrency(state) {
-      return state.currencies.find(c => c.code === state.settings.currency) || null
+      return CurrenciesList.find(c => c.code === state.settings.currency) || null
     }
   },
 

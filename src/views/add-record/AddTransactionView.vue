@@ -1,21 +1,23 @@
 <script setup>
 import {ref, onMounted, computed, watch} from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useTransactionStore } from '@/stores/useTransactionStore'
-import { useWalletStore } from '@/stores/useWalletStore'
-import { useUserStore } from '@/stores/useUserStore'
-import { useCategoryStore } from '@/stores/useCategoryStore'
+import {useRouter, useRoute} from 'vue-router'
+import {useTransactionStore} from '@/stores/useTransactionStore'
+import {useWalletStore} from '@/stores/useWalletStore'
+import {useUserStore} from '@/stores/useUserStore'
+import {useCategoryStore} from '@/stores/useCategoryStore'
 import MainHeader from "@/components/MainHeader.vue";
-import { TransactionTypes } from '@/constants/transactionTypes'
+import {TransactionTypes} from '@/constants/transactionTypes'
+import {CurrenciesList} from "@/constants/currenciesList"
 import dayjs from 'dayjs'
 import Flatpickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
-import { Russian } from 'flatpickr/dist/l10n/ru.js'
+import {Russian} from 'flatpickr/dist/l10n/ru.js'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
+
 dayjs.extend(customParseFormat)
 import * as bootstrap from 'bootstrap'
 import AddCategoryModal from "@/views/settings/AddCategoryModal.vue";
-import { useSettingsStore } from '@/stores/useSettingsStore'
+import {useSettingsStore} from '@/stores/useSettingsStore'
 import {storeToRefs} from "pinia";
 
 const amount = ref('')
@@ -94,7 +96,7 @@ watch(splitItems, (items) => {
   amount.value = (originalAmount.value ? parseFloat(originalAmount.value) : 0) - totalChildAmount
 
   // При доходе — поменяй логику на сложение, если нужно
-}, { deep: true })
+}, {deep: true})
 
 
 walletStore.fetchWallets?.()
@@ -362,20 +364,20 @@ const handleSubmit = async () => {
 
 <template>
   <div class="text-center position-relative">
-    <router-link to="/add-record" class="btn-close position-absolute" aria-label="Закрыть" />
+    <router-link to="/add-record" class="btn-close position-absolute" aria-label="Закрыть"/>
 
-    <MainHeader :title="transactionTitle" />
+    <MainHeader :title="transactionTitle"/>
 
     <form @submit.prevent="handleSubmit" class="flex-grow-1 d-flex flex-column">
       <div class="mb-3">
         <label class="form-label">Сумма</label>
-        <input v-model="amount" type="text" class="form-control" placeholder="Введите сумму" />
+        <input v-model="amount" type="text" class="form-control" placeholder="Введите сумму"/>
       </div>
 
       <div class="mb-3">
         <label class="form-label">Валюта</label>
         <select v-model="selectedCurrency" class="form-select">
-          <option v-for="currency in settingsStore.currencies" :key="currency.code" :value="currency.code">
+          <option v-for="currency in CurrenciesList" :key="currency.code" :value="currency.code">
             {{ currency.name }} ({{ currency.symbol }})
           </option>
         </select>
@@ -383,7 +385,7 @@ const handleSubmit = async () => {
 
       <div class="mb-3">
         <label class="form-label">Дата</label>
-        <Flatpickr v-model="date" :config="config" class="form-control" />
+        <Flatpickr v-model="date" :config="config" class="form-control"/>
       </div>
 
       <!-- Депозиты -->
@@ -441,7 +443,7 @@ const handleSubmit = async () => {
         <div v-for="(item, index) in splitItems" :key="index" class="border rounded p-1 mb-3">
           <div class="row">
             <div class="col-4">
-              <input v-model="item.amount" type="text" class="form-control" placeholder="Сумма" />
+              <input v-model="item.amount" type="text" class="form-control" placeholder="Сумма"/>
             </div>
             <div class="col-6">
               <select v-model="item.categoryId" class="form-select">
@@ -452,7 +454,7 @@ const handleSubmit = async () => {
               </select>
             </div>
             <div class="col-12 order-1 mt-2">
-              <input v-model="item.description" type="text" class="form-control" placeholder="Комментарий" />
+              <input v-model="item.description" type="text" class="form-control" placeholder="Комментарий"/>
             </div>
             <div class="col-2">
               <button type="button" class="w-100 btn btn-outline-danger" @click="removeSplitItem(index)">
@@ -473,14 +475,14 @@ const handleSubmit = async () => {
 
       <div class="mb-3">
         <label class="form-label">Комментарий</label>
-        <textarea v-model="description" class="form-control" />
+        <textarea v-model="description" class="form-control"/>
       </div>
 
       <button type="submit" class="btn btn-primary w-100 mt-auto">Сохранить</button>
     </form>
 
     <!-- Модальное окно -->
-    <AddCategoryModal ref="modalRef" @save="onSaveCategory" />
+    <AddCategoryModal ref="modalRef" @save="onSaveCategory"/>
 
   </div>
 </template>

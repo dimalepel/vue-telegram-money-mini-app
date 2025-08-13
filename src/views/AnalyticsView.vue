@@ -177,6 +177,7 @@ import {useWalletStore} from '@/stores/useWalletStore'
 import {useCategoryStore} from '@/stores/useCategoryStore'
 import {useSettingsStore} from "@/stores/useSettingsStore";
 import {useUserStore} from "@/stores/useUserStore";
+import {CurrenciesList} from "@/constants/currenciesList.js"
 
 import BarChart from '@/components/BarChart.vue'
 import DoughnutChart from '@/components/DoughnutChart.vue'
@@ -594,7 +595,7 @@ const chartOptions = {
 }
 
 const getCurrencyDisplay = (code) => {
-  const currency = settingsStore.currencies.find(c => c.code === code)
+  const currency = CurrenciesList.find(c => c.code === code)
   return currency ? `${currency.symbol}` : code
 }
 
